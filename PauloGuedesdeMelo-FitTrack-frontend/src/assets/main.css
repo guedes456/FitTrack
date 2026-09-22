@@ -1,0 +1,52 @@
+/* Identidade visual mínima do FitTrack — cor de marca aplicada com
+   variáveis CSS para poder ser reaproveitada em qualquer componente. */
+
+:root {
+  --brand-color: #ff6b35;
+  --brand-color-dark: #e0551f;
+  --brand-color-light: #ffe4d6;
+}
+
+.brand-title {
+  color: var(--brand-color);
+}
+
+.brand-text {
+  color: var(--brand-color);
+}
+
+.navbar-brand-fittrack {
+  color: var(--brand-color) !important;
+  font-weight: 700;
+}
+
+.btn-brand {
+  background-color: var(--brand-color);
+  border-color: var(--brand-color);
+  color: #fff;
+}
+
+.btn-brand:hover,
+.btn-brand:focus {
+  background-color: var(--brand-color-dark);
+  border-color: var(--brand-color-dark);
+  color: #fff;
+}
+
+.card-brand-accent {
+  border-top: 4px solid var(--brand-color);
+}
+
+/* Aula 07 — indicador de progresso de upload e prévia de imagem */
+.progress-bar {
+  background-color: var(--brand-color);
+  transition: width 0.15s ease;
+}
+
+.thumbnail-preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+}
