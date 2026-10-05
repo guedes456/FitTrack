@@ -1,10 +1,16 @@
 const { body, validationResult } = require('express-validator');
+const fs = require('fs');
 const { VALIDATION } = require('../../config/constants');
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
     return next();
+  }
+  // O Multer já gravou o arquivo antes do validator rodar; se a requisição
+  // for recusada, apaga o arquivo para não deixar lixo em uploads/workouts.
+  if (req.file) {
+    fs.unlink(req.file.path, () => {});
   }
   const firstError = errors.array()[0].msg;
   const error = new Error(firstError);
