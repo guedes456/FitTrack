@@ -10,6 +10,9 @@ const Workout = sequelize.define('Workout',
     // principal e a "capa" — por isso não existe um campo `cover` separado
     // aqui, diferente do Grupo A (que teria video/audio + cover/thumbnail).
     image: { type: DataTypes.STRING, allowNull: false },
+    // Contador de visualizações do detalhe (Aula 08). Incrementado de forma
+    // atômica a cada GET /workouts/:id.
+    viewsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     userId: { type: DataTypes.INTEGER, allowNull: false }
   },
   {

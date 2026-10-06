@@ -50,3 +50,73 @@
   border-radius: 0.375rem;
   border: 1px solid #dee2e6;
 }
+
+/* Aula 08 — Feed em grade e Detalhe do treino */
+.workout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.workout-card {
+  display: block;
+  background: #fff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #e5e5ea;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.workout-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Proporção 4:3 fixa para a miniatura: o treino é uma foto, e o recorte
+   (object-fit: cover) mantém a grade alinhada mesmo com fotos de tamanhos
+   diferentes. */
+.workout-card-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: #e9e9ee;
+}
+
+.workout-card-body {
+  padding: 0.75rem;
+}
+
+.workout-card-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workout-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #6c6c75;
+}
+
+.avatar-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Imagem do Detalhe: resolução real, só limitada pela largura da tela. */
+.workout-detail-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  background-color: #e9e9ee;
+}

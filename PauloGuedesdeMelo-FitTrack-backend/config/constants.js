@@ -14,5 +14,12 @@ module.exports = {
     // outro por enquanto.
     TITLE_MAX: 60,
     DESCRIPTION_MAX: 300
+  },
+  // Paginação do feed (Aula 08). MAX_LIMIT impede que o cliente peça
+  // ?limit=100000 e faça o banco devolver a tabela inteira de uma vez.
+  PAGINATION: {
+    DEFAULT_PAGE: 1,
+    DEFAULT_LIMIT: 12,
+    MAX_LIMIT: 50
   }
 };

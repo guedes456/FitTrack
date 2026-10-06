@@ -20,3 +20,17 @@ export function updateProfile(formData) {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
+
+// Feed paginado: o cliente pede "página N com L itens"; a API converte isso
+// em offset = (page - 1) * limit. O token vai sozinho pelo interceptor do
+// api.js — o feed é protegido.
+export function getFeed(page = 1, limit = 12) {
+  return api.get('/feed', { params: { page, limit } })
+}
+
+// Detalhe de um treino. Rota pública na API (optionalAuth): funciona com ou
+// sem login, e o token — se existir — vem pelo interceptor, o que permite à
+// API devolver isOwner.
+export function getWorkoutById(id) {
+  return api.get(`/workouts/${id}`)
+}

@@ -4,6 +4,7 @@ const workoutController = require('./workoutController');
 const { createWorkoutValidator } = require('./workoutValidator');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const isAuthenticated = require('../../middlewares/auth');
+const optionalAuth = require('../../middlewares/optionalAuth');
 const workoutMulter = require('../../middlewares/workoutMulter');
 
 // Ordem dos middlewares (igual ao PUT /profile/me da Aula 05):
@@ -18,5 +19,10 @@ router.post(
   createWorkoutValidator,
   asyncHandler(workoutController.createWorkout)
 );
+
+// Rota pública: qualquer pessoa pode ver um treino. O optionalAuth não
+// bloqueia ninguém; só preenche req.user quando há um token válido, para a
+// API poder informar isOwner.
+router.get('/workouts/:id', optionalAuth, asyncHandler(workoutController.getWorkoutDetails));
 
 module.exports = router;

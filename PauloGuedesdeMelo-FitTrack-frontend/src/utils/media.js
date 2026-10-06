@@ -16,3 +16,16 @@ export function getProfilePictureUrl(fileName) {
   }
   return `${API_BASE_URL}/uploads/profiles/${fileName}`
 }
+
+/**
+ * URL pública da imagem de um treino (Grupo B: a imagem é o próprio
+ * conteúdo, então a mesma URL serve para a miniatura do card no Feed e para
+ * a imagem em resolução real no Detalhe — quem muda é só o CSS).
+ *
+ * Aponta para o caminho ESTÁTICO (/uploads/workouts/...), e não para uma rota
+ * da API: uma tag <img> não consegue enviar o header Authorization, então
+ * ela só consegue carregar URLs que não exigem token.
+ */
+export function getWorkoutImageUrl(fileName) {
+  return `${API_BASE_URL}/uploads/workouts/${fileName}`
+}

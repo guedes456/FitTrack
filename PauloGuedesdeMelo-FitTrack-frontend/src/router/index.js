@@ -6,7 +6,7 @@ const routes = [
   { path: '/login', name: 'login', component: () => import('../views/auth/LoginView.vue') },
   { path: '/register', name: 'register', component: () => import('../views/auth/RegisterView.vue') },
 
-  { path: '/feed', name: 'feed', component: () => import('../views/FeedView.vue') },
+  { path: '/feed', name: 'feed', component: () => import('../views/FeedView.vue'), meta: { requiresAuth: true } },
   { path: '/feed/seguindo', name: 'feed-following', component: () => import('../views/FeedFollowingView.vue'), meta: { requiresAuth: true } },
   { path: '/treinos/:id', name: 'treino-detail', component: () => import('../views/TreinoDetailView.vue') },
   { path: '/sugestoes', name: 'suggestions', component: () => import('../views/SuggestionsView.vue'), meta: { requiresAuth: true } },

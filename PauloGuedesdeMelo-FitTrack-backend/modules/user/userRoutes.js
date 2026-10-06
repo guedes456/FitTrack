@@ -29,4 +29,7 @@ router.put(
 
 router.get('/profile/:username', asyncHandler(userController.getPublicProfile));
 
+// Feed paginado (?page=1&limit=12). Protegido: sem token válido -> 401.
+router.get('/feed', isAuthenticated, asyncHandler(userController.getFeed));
+
 module.exports = router;
