@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.env
+login.json
+teste.txt
+grande.jpg
