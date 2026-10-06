@@ -105,11 +105,11 @@
 - [x] Ordem de middlewares conferida: auth -> multer -> validator -> controller
 - [x] Rota POST /api/workouts montada em app.js
 - [x] config/associations carregado antes do sync
-- [ ] Tabela `workouts` confirmada no banco, com FK (confirmar rodando localmente)
+- [x] Tabela `workouts` confirmada no banco, com FK
 
 ### Checklist desta etapa (Parte A)
-- [ ] Upload completo funciona e treinosCount sobe (testar localmente)
-- [ ] Cada um dos quatro casos de erro é recusado com o status esperado (testar via curl/Postman)
+- [x] Upload completo funciona e treinosCount sobe (curl-upload.jpg: 201)
+- [x] Cada um dos quatro casos de erro é recusado com o status esperado (curl-upload.jpg e curl-formato-invalido.jpg)
 
 ### Parte B — Frontend
 - [x] workoutService.js criado, recebendo onUploadProgress como parâmetro
@@ -123,7 +123,7 @@
 ### Checklist de testes (Parte B) — testar localmente e tirar prints
 - [ ] Login -> link Upload -> URL muda sem recarregar
 - [ ] Envio vazio -> erros de campo obrigatório
-- [ ] Arquivo selecionado -> prévia aparece sem chamada de rede
-- [ ] Envio -> barra de progresso avança -> mensagem de sucesso
-- [ ] DevTools Network -> Content-Type: multipart/form-data; boundary=...
+- [x] Arquivo selecionado -> prévia aparece sem chamada de rede (formulario-preenchido.jpg)
+- [x] Envio -> barra de progresso avança -> mensagem de sucesso (progresso-upload.jpg)
+- [x] DevTools Network -> Content-Type: multipart/form-data; boundary=... (upload-multipart.jpg)
 - [ ] Banco/Postman -> registro criado e treinosCount subiu
