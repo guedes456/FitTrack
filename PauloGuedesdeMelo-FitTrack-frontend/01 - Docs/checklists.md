@@ -121,9 +121,9 @@
 - [x] Resposta ao checklist de alcançabilidade escrita (atividade07/resposta-alcancabilidade.md)
 
 ### Checklist de testes (Parte B) — testar localmente e tirar prints
-- [ ] Login -> link Upload -> URL muda sem recarregar
-- [ ] Envio vazio -> erros de campo obrigatório
+- [x] Login -> link Upload -> URL muda sem recarregar (link-envio.jpg, envio-vazio-erros.jpg)
+- [x] Envio vazio -> erros de campo obrigatório (envio-vazio-erros.jpg)
 - [x] Arquivo selecionado -> prévia aparece sem chamada de rede (formulario-preenchido.jpg)
 - [x] Envio -> barra de progresso avança -> mensagem de sucesso (progresso-upload.jpg)
 - [x] DevTools Network -> Content-Type: multipart/form-data; boundary=... (upload-multipart.jpg)
-- [ ] Banco/Postman -> registro criado e treinosCount subiu
+- [x] Banco/Postman -> registro criado e treinosCount subiu (banco-contador.jpg)
