@@ -140,12 +140,12 @@
 - [x] getFeed adicionado a userController.js / userRoutes.js (GET /api/feed, isAuthenticated)
 
 ### Checklist dos testes (Parte A) — curl, um print de cada
-- [ ] Detalhe sem token -> 200, isOwner: false, viewsCount em 1
-- [ ] Detalhe com o token do dono -> 200, isOwner: true, viewsCount em 2
-- [ ] Detalhe de um item inexistente -> 404
-- [ ] Feed sem token -> 401
-- [ ] Feed com token, ?page=1&limit=1 -> um item só
-- [ ] Feed com token, ?page=2&limit=1 -> o próximo item (ou lista vazia se só houver um)
+- [x] Detalhe sem token -> 200, isOwner: false, viewsCount em 1
+- [x] Detalhe com o token do dono -> 200, isOwner: true, viewsCount em 2
+- [x] Detalhe de um item inexistente -> 404
+- [x] Feed sem token -> 401
+- [x] Feed com token, ?page=1&limit=1 -> um item só
+- [x] Feed com token, ?page=2&limit=1 -> o próximo item (ou lista vazia se só houver um)
 
 ### Parte B — Frontend
 - [x] getWorkoutImageUrl adicionada a utils/media.js (aponta para /uploads/workouts, nunca para a API)
@@ -157,8 +157,8 @@
 - [x] isOwner recebido da API e guardado no estado da tela (sem uso visual até a Aula 09)
 
 ### Checklist de testes (Parte B) — testar localmente e tirar prints
-- [ ] Login -> link do Feed na Navbar/Sidebar -> itens reais aparecendo (feed-real.jpg)
-- [ ] Clicar num card -> navega para o detalhe sem recarregar a página
-- [ ] Detalhe: imagem carrega em resolução real, maior que a miniatura do card (detalhe-real.jpg)
-- [ ] F5 no detalhe -> curl em GET /api/workouts/:id mostra viewsCount subindo
-- [ ] Acessar um id inexistente pela URL -> mensagem de erro, sem a tela quebrar
+- [x] Login -> link do Feed na Navbar/Sidebar -> itens reais aparecendo (feed-real.jpg)
+- [x] Clicar num card -> navega para o detalhe sem recarregar a página
+- [x] Detalhe: imagem carrega em resolução real, maior que a miniatura do card (detalhe-real.jpg)
+- [x] F5 no detalhe -> curl em GET /api/workouts/:id mostra viewsCount subindo
+- [x] Acessar um id inexistente pela URL -> mensagem de erro, sem a tela quebrar
