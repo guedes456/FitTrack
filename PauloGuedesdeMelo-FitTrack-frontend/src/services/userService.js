@@ -4,8 +4,10 @@ export function getMyProfile() {
   return api.get('/profile/me')
 }
 
+// Perfil público: com a lista de treinos da pessoa e isOwner. Rota pública na
+// API (optionalAuth), então funciona também para visitante anônimo.
 export function getPublicProfile(username) {
-  return api.get(`/profile/${username}`)
+  return api.get(`/profile/${encodeURIComponent(username)}`)
 }
 
 // Única chamada de toda a aplicação que precisa de um Content-Type
@@ -33,4 +35,28 @@ export function getFeed(page = 1, limit = 12) {
 // API devolver isOwner.
 export function getWorkoutById(id) {
   return api.get(`/workouts/${id}`)
+}
+
+// ---- CRUD do treino (Aula 09) ----
+
+// Treinos do usuário logado, do mais novo para o mais antigo.
+export function getMyWorkouts() {
+  return api.get('/my-workouts')
+}
+
+// Dados para pré-preencher o formulário de edição (só o dono: 403 para os outros).
+export function getWorkoutForEdit(id) {
+  return api.get(`/workouts/${id}/edit`)
+}
+
+// Edição: multipart/form-data porque a imagem nova é opcional mas possível,
+// igual ao upload da Aula 07 (o Axios gera o boundary sozinho).
+export function updateWorkout(id, formData) {
+  return api.put(`/workouts/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function deleteWorkout(id) {
+  return api.delete(`/workouts/${id}`)
 }

@@ -5,7 +5,7 @@
 // o texto de cada estado.
 defineProps({
   type: { type: String, default: 'submit' },
-  variant: { type: String, default: 'brand' }, // 'brand' | 'dark' | 'outline'
+  variant: { type: String, default: 'brand' }, // 'brand' | 'dark' | 'outline' | 'danger'
   loading: { type: Boolean, default: false },
   loadingText: { type: String, default: 'Enviando...' },
   block: { type: Boolean, default: true },
@@ -15,6 +15,7 @@ const variantClass = {
   brand: 'btn-brand',
   dark: 'btn-dark',
   outline: 'btn-outline-secondary',
+  danger: 'btn-danger',
 }
 </script>
 

@@ -2,11 +2,14 @@
 import { reactive, ref, onMounted } from 'vue'
 import { getMyProfile, updateProfile } from '../../services/userService'
 import { getProfilePictureUrl } from '../../utils/media'
+import { useAuthStore } from '../../stores/auth'
 import FormCard from '../../components/base/FormCard.vue'
 import BaseInput from '../../components/base/BaseInput.vue'
 import BaseButton from '../../components/base/BaseButton.vue'
 
 const BIO_MAX = 160
+
+const authStore = useAuthStore()
 
 const profile = ref(null)
 const loadErrorMessage = ref('')
@@ -93,6 +96,11 @@ async function handleSubmit() {
 
     const response = await updateProfile(formData)
     profile.value = response.data
+    // Mantém o avatar da Navbar em dia com a foto/nome recém-salvos.
+    authStore.updateUser({
+      fullName: response.data.fullName,
+      profilePicture: response.data.profilePicture,
+    })
     successMessage.value = response.message || 'Perfil atualizado com sucesso!'
 
     // A foto nova já está persistida no servidor — limpamos o estado local

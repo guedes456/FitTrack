@@ -29,7 +29,8 @@ exports.getMyProfile = async (req, res) => {
 };
 
 exports.getPublicProfile = async (req, res) => {
-  const user = await userService.getPublicProfile(req.params.username);
+  const viewerId = req.user ? req.user.id : null;
+  const user = await userService.getPublicProfile(req.params.username, viewerId);
   return success(res, user);
 };
 

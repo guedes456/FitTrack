@@ -1,5 +1,4 @@
 const { body, validationResult } = require('express-validator');
-const fs = require('fs');
 const { VALIDATION } = require('../../config/constants');
 
 const validate = (req, res, next) => {
@@ -7,11 +6,8 @@ const validate = (req, res, next) => {
   if (errors.isEmpty()) {
     return next();
   }
-  // O Multer já gravou o arquivo antes do validator rodar; se a requisição
-  // for recusada, apaga o arquivo para não deixar lixo em uploads/workouts.
-  if (req.file) {
-    fs.unlink(req.file.path, () => {});
-  }
+  // Se o Multer já gravou um arquivo, quem apaga é o errorHandler (limpeza
+  // de órfãos centralizada), então aqui basta lançar o erro.
   const firstError = errors.array()[0].msg;
   const error = new Error(firstError);
   error.status = 400;
@@ -33,20 +29,19 @@ function requireImage(req, res, next) {
   return next();
 }
 
-exports.createWorkoutValidator = [
-  requireImage,
+const titleRule = body('title')
+  .notEmpty().withMessage('O título é obrigatório.')
+  .isLength({ max: VALIDATION.TITLE_MAX })
+  .withMessage(`O título deve ter no máximo ${VALIDATION.TITLE_MAX} caracteres.`)
+  .trim();
 
-  body('title')
-    .notEmpty().withMessage('O título é obrigatório.')
-    .isLength({ max: VALIDATION.TITLE_MAX })
-    .withMessage(`O título deve ter no máximo ${VALIDATION.TITLE_MAX} caracteres.`)
-    .trim(),
+const descriptionRule = body('description')
+  .optional({ checkFalsy: true })
+  .isLength({ max: VALIDATION.DESCRIPTION_MAX })
+  .withMessage(`A descrição deve ter no máximo ${VALIDATION.DESCRIPTION_MAX} caracteres.`)
+  .trim();
 
-  body('description')
-    .optional({ checkFalsy: true })
-    .isLength({ max: VALIDATION.DESCRIPTION_MAX })
-    .withMessage(`A descrição deve ter no máximo ${VALIDATION.DESCRIPTION_MAX} caracteres.`)
-    .trim(),
+exports.createWorkoutValidator = [requireImage, titleRule, descriptionRule, validate];
 
-  validate
-];
+// Na edição a imagem é OPCIONAL: sem arquivo novo, a imagem atual é mantida.
+exports.updateWorkoutValidator = [titleRule, descriptionRule, validate];

@@ -1,6 +1,5 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { createWorkout } from '../services/workoutService'
 import FormCard from '../components/base/FormCard.vue'
 import BaseInput from '../components/base/BaseInput.vue'
@@ -9,7 +8,6 @@ import BaseButton from '../components/base/BaseButton.vue'
 const TITLE_MAX = 60
 const DESCRIPTION_MAX = 300
 
-const router = useRouter()
 
 const form = reactive({
   title: '',
@@ -23,6 +21,7 @@ const errors = reactive({
 })
 
 const selectedFile = ref(null)
+const fileInput = ref(null)
 const previewUrl = ref('')
 
 const isSubmitting = ref(false)
@@ -101,9 +100,18 @@ async function handleSubmit() {
 
     successMessage.value = 'Treino enviado com sucesso!'
 
-    setTimeout(() => {
-      router.push({ name: 'feed' })
-    }, 1200)
+    // Limpa o formulário para um novo envio. A mensagem de sucesso (com o
+    // link para Meus Itens) fica na tela em vez de redirecionar sozinha.
+    form.title = ''
+    form.description = ''
+    selectedFile.value = null
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value)
+      previewUrl.value = ''
+    }
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   } catch (error) {
     apiErrorMessage.value = error.message
   } finally {
@@ -140,6 +148,7 @@ async function handleSubmit() {
         </label>
         <input
           id="image"
+          ref="fileInput"
           type="file"
           class="form-control"
           :class="{ 'is-invalid': errors.image }"
@@ -175,6 +184,7 @@ async function handleSubmit() {
       </div>
       <div v-if="successMessage" class="alert alert-success py-2" role="alert">
         {{ successMessage }}
+        <router-link to="/meus-treinos" class="alert-link">Ver em Meus Itens</router-link>
       </div>
 
       <BaseButton :loading="isSubmitting" loading-text="Enviando...">

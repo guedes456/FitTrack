@@ -120,3 +120,55 @@
   border-radius: 0.5rem;
   background-color: #e9e9ee;
 }
+
+/* Aula 09 — card sem <a> gigante, ações, perfil público */
+.workout-card-media {
+  display: block;
+}
+
+.workout-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.workout-card-title a:hover {
+  text-decoration: underline;
+}
+
+.workout-card-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: inherit;
+  text-decoration: none;
+}
+.workout-card-author:hover {
+  text-decoration: underline;
+}
+
+.workout-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e9e9ee;
+}
+
+.profile-counters {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}

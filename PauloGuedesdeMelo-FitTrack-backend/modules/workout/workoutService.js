@@ -1,5 +1,11 @@
+const path = require('path');
+const fs = require('fs');
+const { Op } = require('sequelize');
+const sequelize = require('../../config/database');
 const Workout = require('./workoutModel');
 const User = require('../user/userModel');
+
+const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
 
 async function createWorkout(userId, { title, description }, fileName) {
   const workout = await Workout.create({
@@ -104,4 +110,123 @@ async function getFeedWorkouts({ page, limit }) {
   };
 }
 
-module.exports = { createWorkout, getWorkoutDetails, getFeedWorkouts };
+// Apaga um arquivo de treino do disco SEM nunca derrubar a requisição: quando
+// isto roda, o banco já foi atualizado e a resposta ao usuário já é de
+// sucesso. Se a remoção falhar, o pior caso é um arquivo sobrando em disco
+// (órfão), nunca um registro apontando para um arquivo que sumiu.
+async function removeWorkoutFile(fileName) {
+  if (!fileName) return;
+  try {
+    await fs.promises.unlink(path.join(UPLOAD_DIR, fileName));
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.error('Não foi possível remover o arquivo do treino:', err.message);
+    }
+  }
+}
+
+// Busca o treino e confere o dono. A ORDEM importa: primeiro "existe?"
+// (404), depois "é seu?" (403). Se a ordem fosse inversa, qualquer pessoa
+// receberia 403 para ids inexistentes e 404 para ids reais de outros
+// usuários, o que revelaria quais ids existem. Na ordem certa, 404 vale
+// para todo mundo e 403 só aparece quando o treino realmente existe.
+async function findOwnedWorkout(workoutId, userId) {
+  const id = Number(workoutId);
+  if (!Number.isInteger(id) || id < 1) {
+    throw notFoundError();
+  }
+
+  const workout = await Workout.findByPk(id);
+  if (!workout) {
+    throw notFoundError();
+  }
+
+  if (workout.userId !== userId) {
+    const error = new Error('Você não tem permissão para alterar este treino.');
+    error.status = 403;
+    throw error;
+  }
+
+  return workout;
+}
+
+async function getMyWorkouts(userId) {
+  const workouts = await Workout.findAll({
+    where: { userId },
+    order: [['createdAt', 'DESC'], ['id', 'DESC']]
+  });
+  return workouts.map(toPublicWorkout);
+}
+
+// Dados para pré-preencher o formulário de edição. Não passa por
+// getWorkoutDetails de propósito: abrir o formulário de edição não é uma
+// "visualização" e não deve mexer na contagem.
+async function getWorkoutForEdit(workoutId, userId) {
+  const workout = await findOwnedWorkout(workoutId, userId);
+  return {
+    id: workout.id,
+    title: workout.title,
+    description: workout.description,
+    image: workout.image
+  };
+}
+
+async function updateWorkout(workoutId, userId, { title, description }, newFileName) {
+  const workout = await findOwnedWorkout(workoutId, userId);
+  const previousImage = workout.image;
+
+  workout.title = title;
+  workout.description = description || null;
+  if (newFileName) {
+    workout.image = newFileName;
+  }
+  await workout.save();
+
+  // Banco ANTES do disco: com o registro já apontando para a imagem nova, o
+  // arquivo antigo não é mais usado por ninguém e pode ser apagado. Na ordem
+  // inversa (apagar primeiro), um erro no save() deixaria o banco apontando
+  // para um arquivo que já não existe (imagem quebrada).
+  if (newFileName && previousImage && previousImage !== newFileName) {
+    await removeWorkoutFile(previousImage);
+  }
+
+  return {
+    id: workout.id,
+    title: workout.title,
+    description: workout.description,
+    image: workout.image,
+    viewsCount: workout.viewsCount,
+    createdAt: workout.createdAt,
+    updatedAt: workout.updatedAt
+  };
+}
+
+async function deleteWorkout(workoutId, userId) {
+  const workout = await findOwnedWorkout(workoutId, userId);
+  const fileName = workout.image;
+
+  // Registro e contador mudam juntos, numa transação: ou os dois acontecem,
+  // ou nenhum. O contador nunca fica abaixo de zero.
+  await sequelize.transaction(async (transaction) => {
+    await workout.destroy({ transaction });
+    await User.decrement('treinosCount', {
+      by: 1,
+      where: { id: userId, treinosCount: { [Op.gt]: 0 } },
+      transaction
+    });
+  });
+
+  // Só depois do banco: se o disco falhar, sobra um arquivo (órfão), mas o
+  // treino já foi excluído de verdade e ninguém vê imagem quebrada.
+  await removeWorkoutFile(fileName);
+}
+
+module.exports = {
+  createWorkout,
+  getWorkoutDetails,
+  getFeedWorkouts,
+  getMyWorkouts,
+  getWorkoutForEdit,
+  updateWorkout,
+  deleteWorkout
+};

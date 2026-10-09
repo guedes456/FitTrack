@@ -38,6 +38,13 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem(USER_KEY, JSON.stringify(user))
     },
 
+    // Atualiza só alguns campos do usuário guardado (ex.: foto nova), para
+    // a Navbar refletir a mudança sem precisar de um novo login.
+    updateUser(partial) {
+      this.user = { ...this.user, ...partial }
+      localStorage.setItem(USER_KEY, JSON.stringify(this.user))
+    },
+
     clearSession() {
       this.token = null
       this.user = null

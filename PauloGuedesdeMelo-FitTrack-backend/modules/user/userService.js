@@ -1,4 +1,5 @@
 const User = require('./userModel');
+const Workout = require('../workout/workoutModel');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
@@ -79,10 +80,22 @@ async function getUserProfile(userId) {
   return user;
 }
 
-async function getPublicProfile(username) {
+async function getPublicProfile(username, viewerId) {
   const user = await User.findOne({
     where: { username },
-    attributes: ['id', 'username', 'fullName', 'bio', 'profilePicture', 'followersCount', 'followingCount', 'treinosCount']
+    attributes: ['id', 'username', 'fullName', 'bio', 'profilePicture', 'followersCount', 'followingCount', 'treinosCount'],
+    // include traz os treinos da pessoa junto, numa consulta só; o order
+    // fica no NÍVEL DE CIMA (e não dentro do include) e referencia o model
+    // incluído: mais novo primeiro, com o id como desempate.
+    include: [{
+      model: Workout,
+      as: 'workouts',
+      attributes: ['id', 'title', 'description', 'image', 'viewsCount', 'createdAt']
+    }],
+    order: [
+      [{ model: Workout, as: 'workouts' }, 'createdAt', 'DESC'],
+      [{ model: Workout, as: 'workouts' }, 'id', 'DESC']
+    ]
   });
 
   if (!user) {
@@ -91,7 +104,35 @@ async function getPublicProfile(username) {
     throw error;
   }
 
-  return user;
+  const author = {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    profilePicture: user.profilePicture
+  };
+
+  return {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    bio: user.bio,
+    profilePicture: user.profilePicture,
+    followersCount: user.followersCount,
+    followingCount: user.followingCount,
+    treinosCount: user.treinosCount,
+    // Cada treino leva o autor, para o mesmo card do Feed funcionar aqui.
+    workouts: user.workouts.map((w) => ({
+      id: w.id,
+      title: w.title,
+      description: w.description,
+      image: w.image,
+      viewsCount: w.viewsCount,
+      createdAt: w.createdAt,
+      user: author
+    })),
+    // viewerId vem do optionalAuth (null para visitante anônimo).
+    isOwner: viewerId != null && viewerId === user.id
+  };
 }
 
 async function updateUserProfile(userId, { fullName, bio }, newFileName) {

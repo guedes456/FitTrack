@@ -1,11 +1,18 @@
 <script setup>
 import { getWorkoutImageUrl, getProfilePictureUrl } from '../../utils/media'
 
-// Card reutilizável da grade do Feed. Recebe o treino já no formato da API
-// ({ id, title, image, viewsCount, createdAt, user: { username, profilePicture } })
-// e só se preocupa em exibir; quem busca os dados é a tela que usa o card.
+// Card reutilizável. Recebe o treino no formato da API
+// ({ id, title, image, viewsCount, createdAt, user: { username, profilePicture } }).
+//
+// Por que o card NÃO é mais um <a> gigante: link dentro de link é HTML
+// inválido, e botão dentro de <a> dispara a navegação junto com o clique.
+// Agora o card é um <article> e só a imagem e o título são links; o autor é
+// outro link independente, e as ações (Editar/Excluir) ficam num slot, fora
+// de qualquer <a>.
 defineProps({
   workout: { type: Object, required: true },
+  // false em telas onde todos os cards são do mesmo autor (perfil, Meus Itens).
+  showAuthor: { type: Boolean, default: true },
 })
 
 function formatDate(isoDate) {
@@ -14,32 +21,51 @@ function formatDate(isoDate) {
 </script>
 
 <template>
-  <router-link
-    :to="{ name: 'treino-detail', params: { id: workout.id } }"
-    class="workout-card"
-  >
-    <img
-      :src="getWorkoutImageUrl(workout.image)"
-      :alt="workout.title"
-      class="workout-card-img"
-      loading="lazy"
-    />
+  <article class="workout-card">
+    <router-link
+      :to="{ name: 'treino-detail', params: { id: workout.id } }"
+      class="workout-card-media"
+      :aria-label="workout.title"
+    >
+      <img
+        :src="getWorkoutImageUrl(workout.image)"
+        :alt="workout.title"
+        class="workout-card-img"
+        loading="lazy"
+      />
+    </router-link>
+
     <div class="workout-card-body">
-      <h2 class="workout-card-title">{{ workout.title }}</h2>
+      <h2 class="workout-card-title">
+        <router-link :to="{ name: 'treino-detail', params: { id: workout.id } }">
+          {{ workout.title }}
+        </router-link>
+      </h2>
+
       <div class="workout-card-meta">
-        <span class="d-flex align-items-center gap-1">
+        <router-link
+          v-if="showAuthor && workout.user"
+          :to="{ name: 'public-profile', params: { username: workout.user.username } }"
+          class="workout-card-author"
+        >
           <img
-            :src="getProfilePictureUrl(workout.user?.profilePicture)"
+            :src="getProfilePictureUrl(workout.user.profilePicture)"
             alt=""
             class="avatar-sm"
           />
-          {{ workout.user?.username }}
-        </span>
+          {{ workout.user.username }}
+        </router-link>
+        <span v-else></span>
         <span><i class="bi bi-eye me-1"></i>{{ workout.viewsCount }}</span>
       </div>
+
       <div class="workout-card-meta mt-1">
         <span>{{ formatDate(workout.createdAt) }}</span>
       </div>
+
+      <div v-if="$slots.actions" class="workout-card-actions">
+        <slot name="actions" />
+      </div>
     </div>
-  </router-link>
+  </article>
 </template>

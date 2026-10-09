@@ -60,16 +60,33 @@ function formatDate(isoDate) {
       <h1 class="h3 mt-2 brand-title">{{ workout.title }}</h1>
 
       <div class="d-flex align-items-center gap-2 text-muted small mb-3">
-        <img
-          :src="getProfilePictureUrl(workout.user?.profilePicture)"
-          alt=""
-          class="avatar-sm"
-        />
-        <span>{{ workout.user?.fullName || workout.user?.username }}</span>
+        <router-link
+          v-if="workout.user"
+          :to="{ name: 'public-profile', params: { username: workout.user.username } }"
+          class="d-flex align-items-center gap-2 text-muted text-decoration-none"
+        >
+          <img
+            :src="getProfilePictureUrl(workout.user.profilePicture)"
+            alt=""
+            class="avatar-sm"
+          />
+          <span>{{ workout.user.fullName || workout.user.username }}</span>
+        </router-link>
         <span>·</span>
         <span>{{ formatDate(workout.createdAt) }}</span>
         <span>·</span>
         <span><i class="bi bi-eye me-1"></i>{{ workout.viewsCount }}</span>
+
+        <!-- Esconder o botão é só conforto de interface, NÃO segurança: quem
+             digita a URL de edição à mão ainda chega à tela. Quem de fato
+             bloqueia é a API, que responde 403 para quem não é o dono. -->
+        <router-link
+          v-if="isOwner"
+          :to="{ name: 'workout-edit', params: { id: workout.id } }"
+          class="btn btn-sm btn-outline-secondary ms-auto"
+        >
+          <i class="bi bi-pencil me-1"></i>Editar
+        </router-link>
       </div>
 
       <!-- Grupo B: a imagem É o conteúdo, então é só uma <img> em resolução

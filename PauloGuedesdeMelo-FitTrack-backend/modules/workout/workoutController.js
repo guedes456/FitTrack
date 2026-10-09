@@ -20,3 +20,33 @@ exports.getWorkoutDetails = async (req, res) => {
   const workout = await workoutService.getWorkoutDetails(req.params.id, viewerId);
   return success(res, workout);
 };
+
+exports.getMyWorkouts = async (req, res) => {
+  const workouts = await workoutService.getMyWorkouts(req.user.id);
+  return success(res, workouts);
+};
+
+exports.getWorkoutForEdit = async (req, res) => {
+  const workout = await workoutService.getWorkoutForEdit(req.params.id, req.user.id);
+  return success(res, workout);
+};
+
+exports.updateWorkout = async (req, res) => {
+  const { title, description } = req.body;
+  // req.file só existe se o formulário enviou uma imagem nova (Multer opcional).
+  const newFileName = req.file ? req.file.filename : null;
+
+  const workout = await workoutService.updateWorkout(
+    req.params.id,
+    req.user.id,
+    { title, description },
+    newFileName
+  );
+
+  return success(res, workout, 'Treino atualizado com sucesso!');
+};
+
+exports.deleteWorkout = async (req, res) => {
+  await workoutService.deleteWorkout(req.params.id, req.user.id);
+  return success(res, null, 'Treino excluído com sucesso.');
+};

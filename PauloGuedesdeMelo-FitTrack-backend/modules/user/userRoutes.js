@@ -4,6 +4,7 @@ const userController = require('./userController');
 const { registerValidator, loginValidator, profileUpdateValidator } = require('./userValidator');
 const asyncHandler = require('../../middlewares/asyncHandler');
 const isAuthenticated = require('../../middlewares/auth');
+const optionalAuth = require('../../middlewares/optionalAuth');
 const profileMulter = require('../../middlewares/profileMulter');
 
 router.post('/register', registerValidator, asyncHandler(userController.register));
@@ -27,7 +28,9 @@ router.put(
   asyncHandler(userController.updateProfile)
 );
 
-router.get('/profile/:username', asyncHandler(userController.getPublicProfile));
+// Pública, mas com optionalAuth para a API poder dizer se quem vê é o dono
+// (isOwner). Fica DEPOIS de /profile/me, senão "me" viraria um :username.
+router.get('/profile/:username', optionalAuth, asyncHandler(userController.getPublicProfile));
 
 // Feed paginado (?page=1&limit=12). Protegido: sem token válido -> 401.
 router.get('/feed', isAuthenticated, asyncHandler(userController.getFeed));
