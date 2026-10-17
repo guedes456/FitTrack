@@ -29,17 +29,18 @@ function requireImage(req, res, next) {
   return next();
 }
 
+// trim() primeiro: um título só com espaços vira "" e é recusado por notEmpty().
 const titleRule = body('title')
+  .trim()
   .notEmpty().withMessage('O título é obrigatório.')
   .isLength({ max: VALIDATION.TITLE_MAX })
-  .withMessage(`O título deve ter no máximo ${VALIDATION.TITLE_MAX} caracteres.`)
-  .trim();
+  .withMessage(`O título deve ter no máximo ${VALIDATION.TITLE_MAX} caracteres.`);
 
 const descriptionRule = body('description')
   .optional({ checkFalsy: true })
+  .trim()
   .isLength({ max: VALIDATION.DESCRIPTION_MAX })
-  .withMessage(`A descrição deve ter no máximo ${VALIDATION.DESCRIPTION_MAX} caracteres.`)
-  .trim();
+  .withMessage(`A descrição deve ter no máximo ${VALIDATION.DESCRIPTION_MAX} caracteres.`);
 
 exports.createWorkoutValidator = [requireImage, titleRule, descriptionRule, validate];
 

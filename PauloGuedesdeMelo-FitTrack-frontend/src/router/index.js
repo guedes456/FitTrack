@@ -10,6 +10,7 @@ const routes = [
   { path: '/feed/seguindo', name: 'feed-following', component: () => import('../views/FeedFollowingView.vue'), meta: { requiresAuth: true } },
   { path: '/treinos/:id', name: 'treino-detail', component: () => import('../views/TreinoDetailView.vue') },
   { path: '/treinos/:id/editar', name: 'workout-edit', component: () => import('../views/EditWorkoutView.vue'), meta: { requiresAuth: true } },
+  { path: '/curtidos', name: 'liked-workouts', component: () => import('../views/LikedWorkoutsView.vue'), meta: { requiresAuth: true } },
   { path: '/meus-treinos', name: 'my-workouts', component: () => import('../views/MyWorkoutsView.vue'), meta: { requiresAuth: true } },
   { path: '/sugestoes', name: 'suggestions', component: () => import('../views/SuggestionsView.vue'), meta: { requiresAuth: true } },
   { path: '/upload', name: 'upload', component: () => import('../views/UploadView.vue'), meta: { requiresAuth: true } },

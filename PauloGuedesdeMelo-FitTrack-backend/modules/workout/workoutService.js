@@ -4,6 +4,8 @@ const { Op } = require('sequelize');
 const sequelize = require('../../config/database');
 const Workout = require('./workoutModel');
 const User = require('../user/userModel');
+const Like = require('../like/likeModel');
+const Comment = require('../comment/commentModel');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
 
@@ -48,6 +50,8 @@ function toPublicWorkout(workout) {
     description: workout.description,
     image: workout.image,
     viewsCount: workout.viewsCount,
+    likesCount: workout.likesCount,
+    commentsCount: workout.commentsCount,
     createdAt: workout.createdAt,
     user: workout.user
       ? {
@@ -80,10 +84,17 @@ async function getWorkoutDetails(workoutId, viewerId) {
   await workout.increment('viewsCount', { by: 1 });
   await workout.reload();
 
+  // Visitante anônimo nunca curtiu nada; para quem está logado, consulta a
+  // tabela likes (a linha existe = curtiu).
+  const isLiked = viewerId != null
+    ? Boolean(await Like.findOne({ where: { userId: viewerId, workoutId: workout.id } }))
+    : false;
+
   return {
     ...toPublicWorkout(workout),
     // viewerId vem do optionalAuth (null para visitante anônimo).
-    isOwner: viewerId != null && viewerId === workout.userId
+    isOwner: viewerId != null && viewerId === workout.userId,
+    isLiked
   };
 }
 
@@ -196,6 +207,8 @@ async function updateWorkout(workoutId, userId, { title, description }, newFileN
     description: workout.description,
     image: workout.image,
     viewsCount: workout.viewsCount,
+    likesCount: workout.likesCount,
+    commentsCount: workout.commentsCount,
     createdAt: workout.createdAt,
     updatedAt: workout.updatedAt
   };
@@ -208,6 +221,12 @@ async function deleteWorkout(workoutId, userId) {
   // Registro e contador mudam juntos, numa transação: ou os dois acontecem,
   // ou nenhum. O contador nunca fica abaixo de zero.
   await sequelize.transaction(async (transaction) => {
+    // Curtidas e comentários do treino saem junto, na MESMA transação. Todo
+    // comando recebe { transaction }: sem isso ele rodaria numa conexão
+    // separada, fora da transação, e não seria desfeito se algo falhasse
+    // adiante.
+    await Like.destroy({ where: { workoutId: workout.id }, transaction });
+    await Comment.destroy({ where: { workoutId: workout.id }, transaction });
     await workout.destroy({ transaction });
     await User.decrement('treinosCount', {
       by: 1,
@@ -222,6 +241,8 @@ async function deleteWorkout(workoutId, userId) {
 }
 
 module.exports = {
+  AUTHOR_ATTRIBUTES,
+  toPublicWorkout,
   createWorkout,
   getWorkoutDetails,
   getFeedWorkouts,

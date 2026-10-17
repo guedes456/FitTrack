@@ -14,10 +14,13 @@ const validate = (req, res, next) => {
 };
 
 exports.registerValidator = [
+  // trim() PRIMEIRO: os validadores seguintes enxergam o valor já aparado.
+  // Com trim() no fim, "   " (3 espaços) passava por isLength/notEmpty e só
+  // depois virava "" — o dado vazio chegava ao banco.
   body('username')
+    .trim()
     .isLength({ min: VALIDATION.USERNAME_MIN, max: VALIDATION.USERNAME_MAX })
-    .withMessage(`O nome de usuário deve ter entre ${VALIDATION.USERNAME_MIN} e ${VALIDATION.USERNAME_MAX} caracteres.`)
-    .trim(),
+    .withMessage(`O nome de usuário deve ter entre ${VALIDATION.USERNAME_MIN} e ${VALIDATION.USERNAME_MAX} caracteres.`),
 
   body('email')
     .isEmail()
@@ -37,8 +40,8 @@ exports.registerValidator = [
     }),
 
   body('fullName')
-    .notEmpty().withMessage('O nome completo é obrigatório.')
-    .trim(),
+    .trim()
+    .notEmpty().withMessage('O nome completo é obrigatório.'),
 
   validate
 ];
@@ -58,16 +61,16 @@ exports.loginValidator = [
 
 exports.profileUpdateValidator = [
   body('fullName')
-    .notEmpty().withMessage('O nome completo é obrigatório.')
-    .trim(),
+    .trim()
+    .notEmpty().withMessage('O nome completo é obrigatório.'),
 
   // bio é opcional (pode vir vazia), mas quando existe respeita BIO_MAX —
   // usando a constante dedicada, não USERNAME_MAX ou outra emprestada.
   body('bio')
     .optional({ checkFalsy: true })
+    .trim()
     .isLength({ max: VALIDATION.BIO_MAX })
-    .withMessage(`A bio deve ter no máximo ${VALIDATION.BIO_MAX} caracteres.`)
-    .trim(),
+    .withMessage(`A bio deve ter no máximo ${VALIDATION.BIO_MAX} caracteres.`),
 
   validate
 ];

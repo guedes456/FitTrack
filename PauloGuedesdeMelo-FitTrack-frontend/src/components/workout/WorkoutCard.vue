@@ -1,5 +1,6 @@
 <script setup>
 import { getWorkoutImageUrl, getProfilePictureUrl } from '../../utils/media'
+import { formatDate, formatCount } from '../../utils/format'
 
 // Card reutilizável. Recebe o treino no formato da API
 // ({ id, title, image, viewsCount, createdAt, user: { username, profilePicture } }).
@@ -14,10 +15,6 @@ defineProps({
   // false em telas onde todos os cards são do mesmo autor (perfil, Meus Itens).
   showAuthor: { type: Boolean, default: true },
 })
-
-function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString('pt-BR')
-}
 </script>
 
 <template>
@@ -56,7 +53,11 @@ function formatDate(isoDate) {
           {{ workout.user.username }}
         </router-link>
         <span v-else></span>
-        <span><i class="bi bi-eye me-1"></i>{{ workout.viewsCount }}</span>
+        <span class="workout-card-stats">
+          <span title="Visualizações"><i class="bi bi-eye me-1"></i>{{ formatCount(workout.viewsCount) }}</span>
+          <span title="Curtidas"><i class="bi bi-heart me-1"></i>{{ formatCount(workout.likesCount) }}</span>
+          <span title="Comentários"><i class="bi bi-chat me-1"></i>{{ formatCount(workout.commentsCount) }}</span>
+        </span>
       </div>
 
       <div class="workout-card-meta mt-1">

@@ -90,7 +90,7 @@ async function getPublicProfile(username, viewerId) {
     include: [{
       model: Workout,
       as: 'workouts',
-      attributes: ['id', 'title', 'description', 'image', 'viewsCount', 'createdAt']
+      attributes: ['id', 'title', 'description', 'image', 'viewsCount', 'likesCount', 'commentsCount', 'createdAt']
     }],
     order: [
       [{ model: Workout, as: 'workouts' }, 'createdAt', 'DESC'],
@@ -127,6 +127,8 @@ async function getPublicProfile(username, viewerId) {
       description: w.description,
       image: w.image,
       viewsCount: w.viewsCount,
+      likesCount: w.likesCount,
+      commentsCount: w.commentsCount,
       createdAt: w.createdAt,
       user: author
     })),

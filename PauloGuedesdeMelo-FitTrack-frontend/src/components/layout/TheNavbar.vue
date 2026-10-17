@@ -77,6 +77,9 @@ async function handleLogout() {
             <router-link to="/meus-treinos" role="menuitem" @click="closeMenu">
               <i class="bi bi-grid me-2"></i>Meus Itens
             </router-link>
+            <router-link to="/curtidos" role="menuitem" @click="closeMenu">
+              <i class="bi bi-heart me-2"></i>Curtidos
+            </router-link>
             <hr class="my-1" />
             <button type="button" role="menuitem" @click="handleLogout">
               <i class="bi bi-box-arrow-right me-2"></i>Sair

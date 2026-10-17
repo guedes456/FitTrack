@@ -21,6 +21,9 @@ const { isAuthenticated, isAdmin } = useAuth()
     <router-link to="/meu-progresso" v-if="isAuthenticated">
       <i class="bi bi-graph-up me-2"></i>Meu Progresso
     </router-link>
+    <router-link to="/curtidos" v-if="isAuthenticated">
+      <i class="bi bi-heart me-2"></i>Curtidos
+    </router-link>
     <router-link to="/upload" v-if="isAuthenticated">
       <i class="bi bi-cloud-upload me-2"></i>Upload
     </router-link>

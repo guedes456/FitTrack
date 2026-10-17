@@ -3,6 +3,9 @@ import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getWorkoutById } from '../services/userService'
 import { getWorkoutImageUrl, getProfilePictureUrl } from '../utils/media'
+import { formatDate } from '../utils/format'
+import LikeButton from '../components/workout/LikeButton.vue'
+import CommentSection from '../components/workout/CommentSection.vue'
 
 const route = useRoute()
 
@@ -36,8 +39,10 @@ async function loadWorkout(id) {
 // sem a tela ser recriada.
 watch(() => route.params.id, (id) => loadWorkout(id), { immediate: true })
 
-function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString('pt-BR')
+// A seção de comentários avisa quando um comentário novo foi publicado, para
+// o contador do treino subir sem recarregar a tela.
+function handleCommentAdded() {
+  workout.value.commentsCount += 1
 }
 </script>
 
@@ -98,9 +103,22 @@ function formatDate(isoDate) {
         class="workout-detail-img"
       />
 
+      <div class="d-flex align-items-start gap-3 mt-3">
+        <!-- :key força um LikeButton novo ao trocar de treino. -->
+        <LikeButton
+          :key="workout.id"
+          :workout-id="workout.id"
+          :initial-liked="workout.isLiked"
+          :initial-count="workout.likesCount"
+        />
+        <span class="text-muted pt-1"><i class="bi bi-chat me-1"></i>{{ workout.commentsCount }}</span>
+      </div>
+
       <p v-if="workout.description" class="mt-3" style="white-space: pre-line;">
         {{ workout.description }}
       </p>
+
+      <CommentSection :key="`comments-${workout.id}`" :workout-id="workout.id" @added="handleCommentAdded" />
     </article>
   </div>
 </template>

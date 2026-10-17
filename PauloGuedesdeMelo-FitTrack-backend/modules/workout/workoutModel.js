@@ -13,6 +13,11 @@ const Workout = sequelize.define('Workout',
     // Contador de visualizações do detalhe (Aula 08). Incrementado de forma
     // atômica a cada GET /workouts/:id.
     viewsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    // Contadores GUARDADOS (Aula 10): são atualizados junto com a curtida/
+    // comentário, dentro de uma transação, para a listagem não precisar fazer
+    // COUNT(*) em likes/comments para cada card.
+    likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    commentsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     userId: { type: DataTypes.INTEGER, allowNull: false }
   },
   {

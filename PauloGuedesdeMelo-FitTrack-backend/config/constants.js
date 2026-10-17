@@ -13,7 +13,9 @@ module.exports = {
     // cada campo tem sua própria constante, mesmo que o valor coincida com
     // outro por enquanto.
     TITLE_MAX: 60,
-    DESCRIPTION_MAX: 300
+    DESCRIPTION_MAX: 300,
+    // Limite do texto de um comentário (Aula 10).
+    COMMENT_MAX: 500
   },
   // Paginação do feed (Aula 08). MAX_LIMIT impede que o cliente peça
   // ?limit=100000 e faça o banco devolver a tabela inteira de uma vez.
