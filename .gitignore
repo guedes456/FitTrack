@@ -5,3 +5,5 @@ login.json
 teste.txt
 grande.jpg
 *.zip
+.env.*
+!.env.example
