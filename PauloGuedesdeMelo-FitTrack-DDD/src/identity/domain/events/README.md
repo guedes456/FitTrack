@@ -1,0 +1,3 @@
+# identity/domain/events
+
+UserRegistered.

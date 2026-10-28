@@ -1,0 +1,3 @@
+# notifications/infrastructure/persistence
+
+SequelizeNotificationRepository.
