@@ -2,6 +2,7 @@ const userService = require('./userService');
 const workoutService = require('../workout/workoutService');
 const { PAGINATION } = require('../../config/constants');
 const { success } = require('../../middlewares/apiResponse');
+const { parseIntInRange } = require('../../utils/pagination');
 
 exports.register = async (req, res) => {
   const { username, email, password, fullName } = req.body;
@@ -48,14 +49,6 @@ exports.updateProfile = async (req, res) => {
 
   return success(res, updatedUser, 'Perfil atualizado com sucesso!');
 };
-
-// Converte o texto da query string num inteiro dentro de [min, max]; qualquer
-// valor ausente ou inválido (ex.: ?page=abc) cai no padrão, em vez de virar erro.
-function parseIntInRange(value, fallback, min, max) {
-  const parsed = parseInt(value, 10);
-  if (Number.isNaN(parsed)) return fallback;
-  return Math.min(Math.max(parsed, min), max);
-}
 
 exports.getFeed = async (req, res) => {
   const page = parseIntInRange(req.query.page, PAGINATION.DEFAULT_PAGE, 1, Number.MAX_SAFE_INTEGER);

@@ -1,5 +1,6 @@
 const User = require('./userModel');
 const Workout = require('../workout/workoutModel');
+const Follow = require('../follow/followModel');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
@@ -104,6 +105,14 @@ async function getPublicProfile(username, viewerId) {
     throw error;
   }
 
+  // isOwner e isFollowing só fazem sentido com alguém logado; o dono do perfil
+  // nunca "segue a si mesmo". Só consulta a tabela follows quando há viewer e
+  // ele não é o dono — senão, false.
+  const isOwner = viewerId != null && viewerId === user.id;
+  const isFollowing = viewerId != null && !isOwner
+    ? Boolean(await Follow.findOne({ where: { followerId: viewerId, followingId: user.id } }))
+    : false;
+
   const author = {
     id: user.id,
     username: user.username,
@@ -133,7 +142,8 @@ async function getPublicProfile(username, viewerId) {
       user: author
     })),
     // viewerId vem do optionalAuth (null para visitante anônimo).
-    isOwner: viewerId != null && viewerId === user.id
+    isOwner,
+    isFollowing
   };
 }
 

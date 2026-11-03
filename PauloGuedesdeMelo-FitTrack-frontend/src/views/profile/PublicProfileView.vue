@@ -3,11 +3,10 @@ import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getPublicProfile } from '../../services/userService'
 import { getProfilePictureUrl } from '../../utils/media'
-import { useAuth } from '../../composables/useAuth'
+import FollowButton from '../../components/user/FollowButton.vue'
 import WorkoutCard from '../../components/workout/WorkoutCard.vue'
 
 const route = useRoute()
-const { isAuthenticated } = useAuth()
 
 const profile = ref(null)
 const isLoading = ref(true)
@@ -58,19 +57,28 @@ watch(() => route.params.username, (username) => loadProfile(username), { immedi
 
           <div class="profile-counters">
             <span><strong>{{ profile.treinosCount }}</strong> treinos</span>
-            <span><strong>{{ profile.followersCount }}</strong> seguidores</span>
-            <span><strong>{{ profile.followingCount }}</strong> seguindo</span>
+            <router-link :to="{ name: 'profile-followers', params: { username: profile.username } }" class="profile-counter-link">
+              <strong>{{ profile.followersCount }}</strong> seguidores
+            </router-link>
+            <router-link :to="{ name: 'profile-following', params: { username: profile.username } }" class="profile-counter-link">
+              <strong>{{ profile.followingCount }}</strong> seguindo
+            </router-link>
           </div>
 
-          <!-- Três situações, três resultados:
-               dono -> "Editar Perfil"; logado e de outra pessoa -> "Seguir"
-               (ainda sem ação); visitante -> nenhum dos dois. -->
+          <!-- Dono -> "Editar Perfil"; qualquer outra pessoa -> botão de seguir.
+               O visitante também vê o botão: o clique o leva ao login e,
+               depois de entrar, de volta a este perfil. O contador de
+               seguidores acima é o MESMO `profile.followersCount` que o botão
+               altera (v-model), então os dois mudam juntos. -->
           <router-link v-if="profile.isOwner" to="/perfil" class="btn btn-sm btn-brand">
             <i class="bi bi-pencil-square me-1"></i>Editar Perfil
           </router-link>
-          <button v-else-if="isAuthenticated" type="button" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-person-plus me-1"></i>Seguir
-          </button>
+          <FollowButton
+            v-else
+            :user-id="profile.id"
+            v-model:following="profile.isFollowing"
+            v-model:followers-count="profile.followersCount"
+          />
         </div>
       </header>
 

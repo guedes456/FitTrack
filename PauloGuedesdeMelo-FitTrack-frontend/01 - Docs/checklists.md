@@ -127,3 +127,22 @@
 - [x] Envio -> barra de progresso avança -> mensagem de sucesso (progresso-upload.jpg)
 - [x] DevTools Network -> Content-Type: multipart/form-data; boundary=... (upload-multipart.jpg)
 - [x] Banco/Postman -> registro criado e treinosCount subiu (banco-contador.jpg)
+
+## Atividade 11 — Seguir Pessoas, Seguidores/Seguindo e Feed de Quem Eu Sigo
+
+> Checklists completos (com os itens de teste a marcar após executar) em `atividade11/checklists-aula11.md`.
+
+### Parte A — Backend
+- [x] followModel.js criado, com os dois índices
+- [x] Associações com apelidos (Follower / Following) declaradas
+- [x] Módulo follow (service, controller, routes) registrado no app.js
+- [x] parseUserId convertendo o id na borda
+- [x] Três escritas (linha + dois contadores) numa só transação
+- [x] Feed filtrado com Op.in, paginado, vazio para quem não segue ninguém
+- [x] isFollowing no perfil público
+
+### Parte B — Frontend
+- [x] followService.js criado
+- [x] FollowButton com defineModel, otimista, com rollback e isBusy
+- [x] Perfil público com botão ativo e números virando links
+- [x] FollowListView (uma tela, duas rotas, abas) e feed filtrado com rota, acessível pela Sidebar

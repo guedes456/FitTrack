@@ -6,6 +6,7 @@ const Workout = require('./workoutModel');
 const User = require('../user/userModel');
 const Like = require('../like/likeModel');
 const Comment = require('../comment/commentModel');
+const Follow = require('../follow/followModel');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
 
@@ -107,6 +108,41 @@ async function getFeedWorkouts({ page, limit }) {
     include: [{ model: User, as: 'user', attributes: AUTHOR_ATTRIBUTES }],
     // id como desempate: dois treinos criados no mesmo segundo não podem
     // trocar de página entre uma requisição e outra.
+    order: [['createdAt', 'DESC'], ['id', 'DESC']],
+    limit,
+    offset
+  });
+
+  return {
+    items: rows.map(toPublicWorkout),
+    page,
+    limit,
+    total: count,
+    hasMore: offset + rows.length < count
+  };
+}
+
+// Feed só com os treinos de quem o usuário segue. Duas consultas: primeiro os
+// ids de quem ele segue; depois o MESMO findAll do feed geral, filtrado por
+// esses ids (Op.in).
+async function getFollowingWorkouts(userId, page, limit) {
+  const follows = await Follow.findAll({
+    where: { followerId: userId },
+    attributes: ['followingId']
+  });
+  const followedIds = follows.map((f) => f.followingId);
+
+  // Não segue ninguém: devolve vazio já aqui. Com a lista vazia, o Op.in
+  // geraria `IN ()`, que é inútil (e, dependendo do banco, inválido).
+  if (followedIds.length === 0) {
+    return { items: [], page, limit, total: 0, hasMore: false };
+  }
+
+  const offset = (page - 1) * limit;
+
+  const { rows, count } = await Workout.findAndCountAll({
+    where: { userId: { [Op.in]: followedIds } },
+    include: [{ model: User, as: 'user', attributes: AUTHOR_ATTRIBUTES }],
     order: [['createdAt', 'DESC'], ['id', 'DESC']],
     limit,
     offset
@@ -246,6 +282,7 @@ module.exports = {
   createWorkout,
   getWorkoutDetails,
   getFeedWorkouts,
+  getFollowingWorkouts,
   getMyWorkouts,
   getWorkoutForEdit,
   updateWorkout,
