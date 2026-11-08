@@ -6,6 +6,7 @@ const Workout = require('./workoutModel');
 const User = require('../user/userModel');
 const Like = require('../like/likeModel');
 const Comment = require('../comment/commentModel');
+const Follow = require('../follow/followModel');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
 
@@ -98,12 +99,13 @@ async function getWorkoutDetails(workoutId, viewerId) {
   };
 }
 
-async function getFeedWorkouts({ page, limit }) {
+async function getFeedWorkouts({ page, limit, where }) {
   // page é "a página que o cliente quer" (1, 2, 3...); o banco só entende
   // "quantos registros pular". Página 1 pula 0, página 2 pula `limit`, etc.
   const offset = (page - 1) * limit;
 
   const { rows, count } = await Workout.findAndCountAll({
+    where, // opcional: o feed filtrado passa aqui o filtro por autor
     include: [{ model: User, as: 'user', attributes: AUTHOR_ATTRIBUTES }],
     // id como desempate: dois treinos criados no mesmo segundo não podem
     // trocar de página entre uma requisição e outra.
@@ -159,6 +161,25 @@ async function findOwnedWorkout(workoutId, userId) {
   }
 
   return workout;
+}
+
+// Feed de quem eu sigo: o mesmo feed paginado da Aula 08, mas só com treinos
+// de autores que o usuário segue.
+async function getFollowingWorkouts(userId, { page, limit }) {
+  const rows = await Follow.findAll({
+    where: { followerId: userId },
+    attributes: ['followingId']
+  });
+  const followedIds = rows.map((row) => row.followingId);
+
+  // Quem não segue ninguém: devolve vazio JÁ AQUI. Sem este return, o filtro
+  // seria `userId IN ()` — uma lista vazia, que é SQL inválido e quebraria a
+  // consulta. Além de evitar o erro, poupa uma ida ao banco.
+  if (followedIds.length === 0) {
+    return { items: [], page, limit, total: 0, hasMore: false };
+  }
+
+  return getFeedWorkouts({ page, limit, where: { userId: { [Op.in]: followedIds } } });
 }
 
 async function getMyWorkouts(userId) {
@@ -246,6 +267,7 @@ module.exports = {
   createWorkout,
   getWorkoutDetails,
   getFeedWorkouts,
+  getFollowingWorkouts,
   getMyWorkouts,
   getWorkoutForEdit,
   updateWorkout,

@@ -21,6 +21,9 @@ const routes = [
 
   { path: '/perfil', name: 'my-profile', component: () => import('../views/profile/MyProfileView.vue'), meta: { requiresAuth: true } },
   { path: '/profile/:username', name: 'public-profile', component: () => import('../views/profile/PublicProfileView.vue') },
+  // Uma tela só para as duas listas: o que muda é a prop `kind`, definida aqui na rota.
+  { path: '/profile/:username/followers', name: 'followers', component: () => import('../views/profile/FollowListView.vue'), props: { kind: 'followers' } },
+  { path: '/profile/:username/following', name: 'following', component: () => import('../views/profile/FollowListView.vue'), props: { kind: 'following' } },
 
   { path: '/admin', name: 'admin-dashboard', component: () => import('../views/admin/AdminDashboardView.vue'), meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/usuarios', name: 'admin-users', component: () => import('../views/admin/AdminUsersView.vue'), meta: { requiresAuth: true, requiresAdmin: true } },
