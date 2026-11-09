@@ -25,14 +25,14 @@ Verificação do link da Sidebar: o `TheSidebar.vue` já apontava "Feed Seguindo
 - [x] isFollowing no perfil público
 
 ### Checklist dos testes (Parte A) — curl, um print de cada
-- [ ] toggle-follow: sem token 401; id abc 400; seguir a si mesmo 400; usuário 99999 404
-- [ ] A segue B 201 (1); A de novo 200 (0); de novo 201 (1); C segue B (2); B segue A
-- [ ] Contadores dos dois lados: B 2 seguidores e 1 seguindo; A 1 e 1; C 0 e 1
-- [ ] follow-status e isFollowing no perfil: visitante false; A vendo B true; C vendo A false; B vendo o próprio false (isOwner true)
-- [ ] followers de B (C e A, mais recente primeiro); following de A; sem password; usuário inexistente 404
-- [ ] Feed filtrado: sem token 401; A vê só os itens de B; ?page=2&limit=1 vazio; quem não segue ninguém, vazio
-- [ ] No banco, linha repetida em follows é recusada (follows.jpg)
-- [ ] Regressão: curtir, comentar, upload, edição, exclusão e GET /feed
+- [x] toggle-follow: sem token 401; id abc 400; seguir a si mesmo 400; usuário 99999 404
+- [x] A segue B 201 (1); A de novo 200 (0); de novo 201 (1); C segue B (2); B segue A
+- [x] Contadores dos dois lados: B 2 seguidores e 1 seguindo; A 1 e 1; C 0 e 1
+- [x] follow-status e isFollowing no perfil: visitante false; A vendo B true; C vendo A false; B vendo o próprio false (isOwner true)
+- [x] followers de B (C e A, mais recente primeiro); following de A; sem password; usuário inexistente 404
+- [x] Feed filtrado: sem token 401; A vê só os itens de B; ?page=2&limit=1 vazio; quem não segue ninguém, vazio
+- [x] No banco, linha repetida em follows é recusada (follows.jpg)
+- [x] Regressão: curtir, comentar, upload, edição, exclusão e GET /feed
 
 ### Parte B — Frontend
 - [x] followService.js criado
@@ -44,12 +44,12 @@ Verificação do link da Sidebar: o `TheSidebar.vue` já apontava "Feed Seguindo
 - [x] Feed filtrado com rota e acessível pela Sidebar
 
 ### Checklist de testes (Parte B) — testar localmente e tirar prints
-- [ ] 1. Visitante: o botão aparece; o clique leva ao login e volta ao perfil
-- [ ] 2. Logado: "Seguir" muda botão e contador na hora; F5 mantém; "Seguindo" desfaz (seguindo.jpg)
-- [ ] 3. Slow 4G: mudança instantânea (otimista.jpg); Offline: muda e volta atrás, com mensagem de erro (rollback.jpg)
-- [ ] 4. O contador nunca vai para -1
-- [ ] 5. No meu perfil não há botão de seguir; os números são links
-- [ ] 6. Seguidores -> Seguindo (aba) sem recarregar; clicar numa pessoa leva ao perfil; usuário inexistente mostra erro; listas vazias mostram mensagem (seguidores.jpg)
-- [ ] 7. De uma pessoa que sigo para uma que não sigo: o botão reflete a pessoa nova
-- [ ] 8. Pela Sidebar, o feed filtrado mostra só itens de quem sigo; deixar de seguir tira os itens (feed-seguindo.jpg)
-- [ ] 9. Regressão: Perfil, Feed, Detalhe (curtir/comentar), Meus Itens, Curtidas, Login/Logout
+- [x] 1. Visitante: o botão aparece; o clique leva ao login e volta ao perfil
+- [x] 2. Logado: "Seguir" muda botão e contador na hora; F5 mantém; "Seguindo" desfaz (seguindo.jpg)
+- [x] 3. Slow 4G: mudança instantânea (otimista.jpg); Offline: muda e volta atrás, com mensagem de erro (rollback.jpg)
+- [x] 4. O contador nunca vai para -1
+- [x] 5. No meu perfil não há botão de seguir; os números são links
+- [x] 6. Seguidores -> Seguindo (aba) sem recarregar; clicar numa pessoa leva ao perfil; usuário inexistente mostra erro; listas vazias mostram mensagem (seguidores.jpg)
+- [x] 7. De uma pessoa que sigo para uma que não sigo: o botão reflete a pessoa nova
+- [x] 8. Pela Sidebar, o feed filtrado mostra só itens de quem sigo; deixar de seguir tira os itens (feed-seguindo.jpg)
+- [x] 9. Regressão: Perfil, Feed, Detalhe (curtir/comentar), Meus Itens, Curtidas, Login/Logout
