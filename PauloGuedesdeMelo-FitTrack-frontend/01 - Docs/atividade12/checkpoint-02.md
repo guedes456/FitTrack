@@ -86,11 +86,21 @@ respondem **404** (id inválido = "não existe"); `follow` responde **400**
    pelo `errorHandler` (mensagem conforme o campo).
 3. **Os três `curl` de id inválido:** ver tabela da seção 2.5.
 
-## Reprodução do problema de paginação (antes da correção)
+## Paginação — resultado depois da correção
 
-*Preencher com o que o meu banco devolveu em `?limit=-3`, `?limit=100000` e
-`?page=-2&limit=2` nos dois feeds (prints `paginacao-antes.jpg` /
-`paginacao-depois.jpg`).*
+Prints: `paginacao-depois.jpg` (feed geral) e `paginacao-depois-filtrado.jpg`
+(feed filtrado).
+
+| Consulta | Resultado |
+|---|---|
+| `?limit=-3` | `limit: 12` (valor padrão) |
+| `?limit=100000` | `limit: 50` (teto `MAX_LIMIT`) |
+| `?page=-2&limit=2` | `page: 1`, `limit: 2` |
+
+O feed geral devolveu `total: 9` e o filtrado `total: 0`, porque a conta usada
+no teste não seguia ninguém naquele momento.
+
+*Reprodução ANTES da correção: ainda falta anexar `paginacao-antes.jpg`.*
 
 ## Pendências (ADR-013)
 

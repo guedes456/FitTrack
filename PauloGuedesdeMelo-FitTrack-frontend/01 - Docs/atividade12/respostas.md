@@ -18,7 +18,7 @@ Se a lista ficasse dentro da função, cada chamada de `useToast()` criaria uma 
 
 **5. Por que `?limit=-3` era um problema, o que há de útil em `Number.parseInt('abc') >= 1` dar false e por que existe um teto**
 
-Um `limit` negativo ia direto para o `LIMIT` do SQL, que não aceita valor negativo e quebrava a consulta (erro 500 em vez de uma resposta educada). `Number.parseInt('abc')` dá `NaN`, e `NaN >= 1` dá `false`: o mesmo teste `>= 1` cobre ao mesmo tempo "não é número" e "número menor que 1", e nos dois casos eu uso o valor padrão, sem precisar de um `if` separado para `NaN`. O teto (`MAX_LIMIT`, 50) existe porque sem ele `?limit=100000` faria o banco devolver a tabela inteira numa resposta só, o que pesa no servidor e na rede.
+Sem validação, um `limit` negativo iria direto para o `LIMIT` do SQL, que não aceita valor negativo, e a consulta falharia (erro 500 em vez de uma resposta educada). Além disso, o valor que o cliente manda é texto, então um `limit` inválido precisa ser tratado antes de chegar ao banco. `Number.parseInt('abc')` dá `NaN`, e `NaN >= 1` dá `false`: o mesmo teste `>= 1` cobre ao mesmo tempo "não é número" e "número menor que 1", e nos dois casos eu uso o valor padrão, sem precisar de um `if` separado para `NaN`. O teto (`MAX_LIMIT`, 50) existe porque sem ele `?limit=100000` faria o banco devolver a tabela inteira numa resposta só, o que pesa no servidor e na rede.
 
 **6. Por que o miolo da atualização otimista não foi extraído e o que é a "regra dos três"**
 
