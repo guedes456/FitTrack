@@ -100,7 +100,22 @@ Prints: `paginacao-depois.jpg` (feed geral) e `paginacao-depois-filtrado.jpg`
 O feed geral devolveu `total: 9` e o filtrado `total: 0`, porque a conta usada
 no teste não seguia ninguém naquele momento.
 
-*Reprodução ANTES da correção: ainda falta anexar `paginacao-antes.jpg`.*
+## Paginação — reprodução ANTES da correção
+
+Prints: `paginacao-antes.jpg` (feed geral) e `paginacao-antes-filtrado.jpg`
+(feed filtrado; o print mostra `limit=100000` e `page=-2&limit=2`).
+
+| Consulta | Resultado antes |
+|---|---|
+| `?limit=-3` | `limit: 1`, devolveu só 1 item (`total: 11`, `hasMore: true`) |
+| `?limit=100000` | `limit: 50` |
+| `?page=-2&limit=2` | `page: 1`, `limit: 2` |
+
+No meu banco **não houve erro 500**: a versão anterior de `parsePagination` já
+limitava os valores a uma faixa (mínimo 1, máximo 50). O problema que sobrava era
+`?limit=-3` virar `limit: 1` em silêncio, em vez de usar o tamanho de página
+padrão (12). Depois da correção, `?limit=-3` volta ao padrão (12) e qualquer valor
+que não seja um inteiro `>= 1` é tratado do mesmo jeito.
 
 ## Pendências (ADR-013)
 

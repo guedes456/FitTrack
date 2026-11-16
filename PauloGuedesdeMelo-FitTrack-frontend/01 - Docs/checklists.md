@@ -132,7 +132,7 @@
 
 ### Parte A — Backend
 - [x] checkpoint-02.md criado, com as respostas dos Blocos 2.1 a 2.6 e as três perguntas extras
-- [ ] Problema de paginação reproduzido e anotado antes da correção (print paginacao-antes.jpg)
+- [x] Problema de paginação reproduzido e anotado antes da correção (paginacao-antes.jpg e paginacao-antes-filtrado.jpg)
 - [x] PAGINATION e utils/pagination.js criados e usados nos dois controllers e nos dois services
 - [x] Testes do Bloco 3.4 com o resultado esperado (paginacao-depois.jpg e paginacao-depois-filtrado.jpg)
 - [x] workoutService.createWorkout dentro de uma transação, com { transaction: t } nas duas escritas
