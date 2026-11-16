@@ -7,6 +7,8 @@ const User = require('../user/userModel');
 const Like = require('../like/likeModel');
 const Comment = require('../comment/commentModel');
 const Follow = require('../follow/followModel');
+const Routine = require('../routine/routineModel');
+const RoutineWorkout = require('../routine/routineWorkoutModel');
 const { parseId } = require('../../utils/httpError');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
@@ -254,6 +256,28 @@ async function deleteWorkout(workoutId, userId) {
     // adiante.
     await Like.destroy({ where: { workoutId: workout.id }, transaction });
     await Comment.destroy({ where: { workoutId: workout.id }, transaction });
+
+    // Rotinas que continham este treino. O ON DELETE CASCADE do banco apagaria
+    // as linhas da junção sozinho, mas NÃO sabe que o treinosCount de cada
+    // rotina é um número guardado à parte: sem este bloco, o contador
+    // continuaria alto, contando um treino que não existe mais.
+    const links = await RoutineWorkout.findAll({
+      where: { workoutId: workout.id },
+      attributes: ['routineId'],
+      transaction
+    });
+    if (links.length > 0) {
+      await Routine.decrement('treinosCount', {
+        by: 1,
+        where: {
+          id: links.map((link) => link.routineId),
+          treinosCount: { [Op.gt]: 0 }
+        },
+        transaction
+      });
+      await RoutineWorkout.destroy({ where: { workoutId: workout.id }, transaction });
+    }
+
     await workout.destroy({ transaction });
     await User.decrement('treinosCount', {
       by: 1,

@@ -1,23 +1,13 @@
 const followService = require('./followService');
 const workoutService = require('../workout/workoutService');
 const { success } = require('../../middlewares/apiResponse');
-const { httpError } = require('../../utils/httpError');
+const { parseId } = require('../../utils/parseId');
 const { parsePagination } = require('../../utils/pagination');
 
 // req.params.userId é SEMPRE texto ("2"), e o id do token (req.user.id) é
-// número. Comparar "2" === 2 dá false, então "seguir a si mesmo" nunca era
-// detectado. A conversão acontece AQUI, na borda (onde o dado entra), para
-// que o service só receba números; lixo ("abc", "0", "-1", "1.5") vira 400.
-function parseUserId(value) {
-  const id = Number(value);
-  if (!Number.isInteger(id) || id < 1) {
-    throw httpError(400, 'Id de usuário inválido.');
-  }
-  return id;
-}
-
+// número: a conversão acontece na borda, com parseId (400 se for lixo).
 exports.toggleFollow = async (req, res) => {
-  const followingId = parseUserId(req.params.userId);
+  const followingId = parseId(req.params.userId, 'usuário');
   const result = await followService.toggleFollow(req.user.id, followingId);
 
   // 201 quando uma relação foi CRIADA; 200 quando foi desfeita.
@@ -27,18 +17,18 @@ exports.toggleFollow = async (req, res) => {
 };
 
 exports.getFollowStatus = async (req, res) => {
-  const userId = parseUserId(req.params.userId);
+  const userId = parseId(req.params.userId, 'usuário');
   const status = await followService.getFollowStatus(req.user.id, userId);
   return success(res, status);
 };
 
 exports.getFollowers = async (req, res) => {
-  const followers = await followService.getFollowers(parseUserId(req.params.userId));
+  const followers = await followService.getFollowers(parseId(req.params.userId, 'usuário'));
   return success(res, followers);
 };
 
 exports.getFollowing = async (req, res) => {
-  const following = await followService.getFollowing(parseUserId(req.params.userId));
+  const following = await followService.getFollowing(parseId(req.params.userId, 'usuário'));
   return success(res, following);
 };
 

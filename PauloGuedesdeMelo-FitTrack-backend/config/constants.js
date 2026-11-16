@@ -15,7 +15,21 @@ module.exports = {
     TITLE_MAX: 60,
     DESCRIPTION_MAX: 300,
     // Limite do texto de um comentário (Aula 10).
-    COMMENT_MAX: 500
+    COMMENT_MAX: 500,
+    // Rotinas (Aula 13): a coleção pessoal de treinos do usuário. Cada campo
+    // tem a sua constante (mesma lógica do BIO_MAX acima).
+    ROUTINE_TITLE_MIN: 3,
+    ROUTINE_TITLE_MAX: 100,
+    ROUTINE_DESCRIPTION_MAX: 500
+  },
+  // Busca global (Aula 13). MIN_LENGTH evita consultar o banco com 1 letra
+  // (devolveria quase tudo); MAX_LENGTH corta textos gigantes; LIMIT é o teto
+  // de resultados POR LISTA (treinos e pessoas). Deve combinar com SEARCH do
+  // front-end (MIN_LENGTH).
+  SEARCH: {
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 100,
+    LIMIT: 10
   },
   // Paginação dos feeds (Aula 08, consolidada no Checkpoint 2 / Aula 12).
   // MAX_LIMIT impede que o cliente peça ?limit=100000 e faça o banco devolver

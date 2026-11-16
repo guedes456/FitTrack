@@ -11,6 +11,7 @@ var workoutRoutes = require('./modules/workout/workoutRoutes');
 var likeRoutes = require('./modules/like/likeRoutes');
 var commentRoutes = require('./modules/comment/commentRoutes');
 var followRoutes = require('./modules/follow/followRoutes');
+var routineRoutes = require('./modules/routine/routineRoutes');
 var errorHandler = require('./middlewares/errorHandler');
 
 var app = express();
@@ -35,6 +36,7 @@ app.use('/api', workoutRoutes);
 app.use('/api', likeRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', followRoutes);
+app.use('/api', routineRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

@@ -3,6 +3,8 @@ const Workout = require('../modules/workout/workoutModel');
 const Like = require('../modules/like/likeModel');
 const Comment = require('../modules/comment/commentModel');
 const Follow = require('../modules/follow/followModel');
+const Routine = require('../modules/routine/routineModel');
+const RoutineWorkout = require('../modules/routine/routineWorkoutModel');
 
 // Associações centralizadas num arquivo só, em vez de cada model importar o
 // outro diretamente: se userModel.js importasse workoutModel.js e
@@ -39,4 +41,16 @@ Comment.belongsTo(Workout, { foreignKey: 'workoutId', as: 'workout' });
 Follow.belongsTo(User, { as: 'Follower', foreignKey: 'followerId' });
 Follow.belongsTo(User, { as: 'Following', foreignKey: 'followingId' });
 
-module.exports = { User, Workout, Like, Comment, Follow };
+// Rotinas (Aula 13): User 1-N Routine, e Routine N-N Workout através de
+// RoutineWorkout. São SEIS associações: duas para ligar o usuário à rotina
+// e, para cada lado da junção (rotina e treino), um hasMany + um belongsTo.
+// onDelete CASCADE: o banco apaga as linhas da junção quando a rotina ou o
+// treino some — mas NÃO ajusta o treinosCount das rotinas (ver deleteWorkout).
+User.hasMany(Routine, { foreignKey: 'userId', as: 'routines' });
+Routine.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Routine.hasMany(RoutineWorkout, { foreignKey: 'routineId', as: 'links', onDelete: 'CASCADE' });
+RoutineWorkout.belongsTo(Routine, { foreignKey: 'routineId', as: 'routine' });
+Workout.hasMany(RoutineWorkout, { foreignKey: 'workoutId', as: 'routineLinks', onDelete: 'CASCADE' });
+RoutineWorkout.belongsTo(Workout, { foreignKey: 'workoutId', as: 'workout' });
+
+module.exports = { User, Workout, Like, Comment, Follow, Routine, RoutineWorkout };
