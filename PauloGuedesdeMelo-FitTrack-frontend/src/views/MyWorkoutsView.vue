@@ -1,32 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { useAsyncData } from '../composables/useAsyncData'
+import { useToast } from '../composables/useToast'
+import { MESSAGES } from '../config/constants'
 import { getMyWorkouts, deleteWorkout } from '../services/userService'
 import WorkoutCard from '../components/workout/WorkoutCard.vue'
 import BaseModal from '../components/base/BaseModal.vue'
 import BaseButton from '../components/base/BaseButton.vue'
 
-const workouts = ref([])
-const isLoading = ref(true)
-const errorMessage = ref('')
+const toast = useToast()
+
+const { data: workouts, isLoading, error } = useAsyncData(
+  () => getMyWorkouts().then((response) => response.data)
+)
 
 // Treino que o usuário clicou em "Excluir" (null = modal fechado).
 const workoutToDelete = ref(null)
 const isDeleting = ref(false)
-const deleteError = ref('')
-
-onMounted(async () => {
-  try {
-    const response = await getMyWorkouts()
-    workouts.value = response.data
-  } catch (error) {
-    errorMessage.value = error.message
-  } finally {
-    isLoading.value = false
-  }
-})
 
 function askDelete(workout) {
-  deleteError.value = ''
   workoutToDelete.value = workout
 }
 
@@ -36,7 +28,6 @@ function cancelDelete() {
 
 async function confirmDelete() {
   isDeleting.value = true
-  deleteError.value = ''
 
   try {
     await deleteWorkout(workoutToDelete.value.id)
@@ -45,8 +36,10 @@ async function confirmDelete() {
     const deletedId = workoutToDelete.value.id
     workouts.value = workouts.value.filter((w) => w.id !== deletedId)
     workoutToDelete.value = null
-  } catch (error) {
-    deleteError.value = error.message
+    toast.success(MESSAGES.WORKOUT_DELETED)
+  } catch {
+    // Exclusão é uma AÇÃO: se falhar, o interceptor já mostrou o toast (na
+    // frente do modal, que continua aberto para tentar de novo).
   } finally {
     isDeleting.value = false
   }
@@ -57,11 +50,11 @@ async function confirmDelete() {
   <div class="p-4">
     <h1 class="h3 mb-3 brand-title">Meus Itens</h1>
 
-    <div v-if="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+    <div v-if="error" class="alert alert-danger" role="alert">{{ error }}</div>
 
     <div v-else-if="isLoading" class="text-muted">Carregando seus treinos...</div>
 
-    <div v-else-if="workouts.length === 0" class="text-muted">
+    <div v-else-if="!workouts || workouts.length === 0" class="text-muted">
       Você ainda não enviou nenhum treino.
       <router-link to="/upload" class="brand-text">Enviar o primeiro</router-link>
     </div>
@@ -98,7 +91,6 @@ async function confirmDelete() {
         <strong>{{ workoutToDelete?.title }}</strong>?
       </p>
       <p class="text-muted small mb-0">Essa ação não pode ser desfeita.</p>
-      <p v-if="deleteError" class="alert alert-danger py-2 mt-3 mb-0">{{ deleteError }}</p>
 
       <template #footer>
         <BaseButton type="button" variant="outline" :block="false" :loading="false" @click="cancelDelete">

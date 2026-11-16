@@ -7,5 +7,6 @@ export function createWorkout(formData, onUploadProgress) {
   return api.post('/workouts', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress,
+    silent: true,
   })
 }

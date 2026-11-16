@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
+import { STORAGE_KEYS } from '../config/constants'
 import { login as loginRequest, logout as logoutRequest } from '../services/authService'
 
-// Estas duas chaves também são lidas diretamente (sem passar pela store)
+// Estas duas chaves (de config/constants.js) também são lidas diretamente (sem passar pela store)
 // dentro do interceptor de requisição do Axios (services/api.js). É
 // proposital: se api.js importasse esta store, e esta store importa
 // authService.js, que importa api.js de volta, teríamos uma dependência
 // circular entre os arquivos. Ler localStorage direto quebra esse ciclo.
-export const TOKEN_KEY = 'fittrack_token'
-export const USER_KEY = 'fittrack_user'
+const { TOKEN: TOKEN_KEY, USER: USER_KEY } = STORAGE_KEYS
 
 function loadStoredUser() {
   const raw = localStorage.getItem(USER_KEY)

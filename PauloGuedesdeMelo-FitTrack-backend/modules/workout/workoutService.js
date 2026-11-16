@@ -7,22 +7,34 @@ const User = require('../user/userModel');
 const Like = require('../like/likeModel');
 const Comment = require('../comment/commentModel');
 const Follow = require('../follow/followModel');
+const { parseId } = require('../../utils/httpError');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
 
 async function createWorkout(userId, { title, description }, fileName) {
-  const workout = await Workout.create({
-    title,
-    description: description || null,
-    image: fileName,
-    userId
-  });
+  // Duas escritas: a linha em `workouts` e o treinosCount do autor. Numa
+  // transação, ou as duas valem ou nenhuma: sem ela, se o increment falhasse
+  // (queda de conexão, deadlock), o treino ficaria gravado e o contador do
+  // usuário errado para sempre. Todo comando recebe { transaction: t }.
+  const workout = await sequelize.transaction(async (t) => {
+    const created = await Workout.create(
+      {
+        title,
+        description: description || null,
+        image: fileName,
+        userId
+      },
+      { transaction: t }
+    );
 
-  // increment() gera um UPDATE atômico (treinos_count = treinos_count + 1)
-  // direto no banco — evita a corrida de ler o valor, somar em memória e
-  // salvar, que perderia incrementos se dois uploads do mesmo usuário
-  // terminassem quase ao mesmo tempo.
-  await User.increment('treinosCount', { by: 1, where: { id: userId } });
+    // increment() gera um UPDATE atômico (treinos_count = treinos_count + 1)
+    // direto no banco — evita a corrida de ler o valor, somar em memória e
+    // salvar, que perderia incrementos se dois uploads do mesmo usuário
+    // terminassem quase ao mesmo tempo.
+    await User.increment('treinosCount', { by: 1, where: { id: userId }, transaction: t });
+
+    return created;
+  });
 
   return {
     id: workout.id,
@@ -66,10 +78,7 @@ function toPublicWorkout(workout) {
 }
 
 async function getWorkoutDetails(workoutId, viewerId) {
-  const id = Number(workoutId);
-  if (!Number.isInteger(id) || id < 1) {
-    throw notFoundError();
-  }
+  const id = parseId(workoutId);
 
   const workout = await Workout.findByPk(id, {
     include: [{ model: User, as: 'user', attributes: AUTHOR_ATTRIBUTES }]
@@ -144,10 +153,7 @@ async function removeWorkoutFile(fileName) {
 // usuários, o que revelaria quais ids existem. Na ordem certa, 404 vale
 // para todo mundo e 403 só aparece quando o treino realmente existe.
 async function findOwnedWorkout(workoutId, userId) {
-  const id = Number(workoutId);
-  if (!Number.isInteger(id) || id < 1) {
-    throw notFoundError();
-  }
+  const id = parseId(workoutId);
 
   const workout = await Workout.findByPk(id);
   if (!workout) {

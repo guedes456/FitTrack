@@ -3,13 +3,10 @@ import { reactive, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { getWorkoutForEdit, updateWorkout } from '../services/userService'
 import { getWorkoutImageUrl } from '../utils/media'
+import { LIMITS } from '../config/constants'
 import FormCard from '../components/base/FormCard.vue'
 import BaseInput from '../components/base/BaseInput.vue'
 import BaseButton from '../components/base/BaseButton.vue'
-
-// Mesmos limites da API (config/constants.js) e da tela de Upload.
-const TITLE_MAX = 60
-const DESCRIPTION_MAX = 300
 
 const route = useRoute()
 const workoutId = route.params.id
@@ -69,12 +66,12 @@ function validate() {
 
   if (!form.title.trim()) {
     errors.title = 'O título é obrigatório.'
-  } else if (form.title.trim().length > TITLE_MAX) {
-    errors.title = `O título deve ter no máximo ${TITLE_MAX} caracteres.`
+  } else if (form.title.trim().length > LIMITS.TITLE_MAX) {
+    errors.title = `O título deve ter no máximo ${LIMITS.TITLE_MAX} caracteres.`
   }
 
-  if (form.description.length > DESCRIPTION_MAX) {
-    errors.description = `A descrição deve ter no máximo ${DESCRIPTION_MAX} caracteres.`
+  if (form.description.length > LIMITS.DESCRIPTION_MAX) {
+    errors.description = `A descrição deve ter no máximo ${LIMITS.DESCRIPTION_MAX} caracteres.`
   }
 
   return !errors.title && !errors.description
@@ -139,7 +136,7 @@ async function handleSubmit() {
         label="Descrição"
         multiline
         :rows="3"
-        :maxlength="DESCRIPTION_MAX"
+        :maxlength="LIMITS.DESCRIPTION_MAX"
         :error="errors.description"
       />
 

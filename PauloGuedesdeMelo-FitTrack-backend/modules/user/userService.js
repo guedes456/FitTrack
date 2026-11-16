@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const { generateToken } = require('../../config/jwt');
+const { httpError } = require('../../utils/httpError');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'profiles');
 
@@ -13,7 +14,7 @@ async function registerUser(username, email, password, fullName) {
   const usernameExists = await User.findOne({ where: { username } });
 
   if (emailExists || usernameExists) {
-    throw new Error('Este e-mail ou usuário já está cadastrado.');
+    throw httpError(409, 'Este e-mail ou usuário já está cadastrado.');
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -39,13 +40,13 @@ async function loginUser(email, password) {
   if (!user) {
     // Mensagem genérica de propósito: nunca revelar se foi o e-mail ou a senha
     // que estava errada, para não ajudar quem está tentando adivinhar contas.
-    throw new Error('E-mail ou senha inválidos.');
+    throw httpError(401, 'E-mail ou senha inválidos.');
   }
 
   const passwordMatches = await bcrypt.compare(password, user.password);
 
   if (!passwordMatches) {
-    throw new Error('E-mail ou senha inválidos.');
+    throw httpError(401, 'E-mail ou senha inválidos.');
   }
 
   const token = generateToken({

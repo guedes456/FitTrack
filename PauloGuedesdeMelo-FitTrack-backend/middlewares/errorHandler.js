@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { error } = require('./apiResponse');
+const { UPLOAD } = require('../config/constants');
 
 /**
  * Apaga do disco os arquivos que o Multer já gravou numa requisição que
@@ -42,7 +43,12 @@ module.exports = (err, req, res, next) => {
   if (err.name === 'MulterError') {
     err.status = 400;
     if (err.code === 'LIMIT_FILE_SIZE') {
-      err.message = 'Arquivo muito grande. Envie uma imagem de até 8MB.';
+      // O limite depende do campo: foto de perfil e imagem de treino têm
+      // tetos diferentes, e a mensagem precisa dizer o certo.
+      const maxBytes = err.field === 'profilePicture'
+        ? UPLOAD.PROFILE_IMAGE_MAX_BYTES
+        : UPLOAD.WORKOUT_IMAGE_MAX_BYTES;
+      err.message = `Arquivo muito grande. Envie uma imagem de até ${maxBytes / (1024 * 1024)}MB.`;
     } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
       err.message = 'Campo de arquivo inesperado.';
     }

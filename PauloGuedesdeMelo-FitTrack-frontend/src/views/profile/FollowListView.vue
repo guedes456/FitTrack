@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAsyncData } from '../../composables/useAsyncData'
 import { getPublicProfile } from '../../services/userService'
 import { getFollowers, getFollowing } from '../../services/followService'
 import { getProfilePictureUrl } from '../../utils/media'
@@ -13,42 +14,25 @@ const props = defineProps({
 
 const route = useRoute()
 
-const profile = ref(null)
-const people = ref([])
-const isLoading = ref(true)
-const errorMessage = ref('')
-
-const displayName = computed(() => profile.value?.fullName || profile.value?.username || '')
-
-async function loadList() {
-  isLoading.value = true
-  errorMessage.value = ''
-  profile.value = null
-  people.value = []
-
-  try {
-    // Duas chamadas EM SEQUÊNCIA: a rota usa o username (/profile/ana/followers),
-    // mas a API de listas usa o ID. Primeiro o perfil devolve o id; depois,
-    // com o id, buscamos a lista.
+// Duas chamadas EM SEQUÊNCIA: a rota usa o username (/profile/ana/followers),
+// mas a API de listas usa o ID. Primeiro o perfil devolve o id; depois, com
+// o id, buscamos a lista. Trocar de aba ou de pessoa NÃO recria a tela, então
+// o watch observa as duas coisas.
+const { data, isLoading, error } = useAsyncData(
+  async () => {
     const profileResponse = await getPublicProfile(route.params.username)
-    profile.value = profileResponse.data
-
+    const profile = profileResponse.data
     const listResponse = props.kind === 'followers'
-      ? await getFollowers(profile.value.id)
-      : await getFollowing(profile.value.id)
-    people.value = listResponse.data
-  } catch (error) {
-    // 404 (usuário inexistente) ou falha de rede: mensagem na tela, sem quebrar.
-    errorMessage.value = error.message
-  } finally {
-    isLoading.value = false
-  }
-}
+      ? await getFollowers(profile.id)
+      : await getFollowing(profile.id)
+    return { profile, people: listResponse.data }
+  },
+  { watch: () => [props.kind, route.params.username] }
+)
 
-// Trocar de aba (followers <-> following) ou de pessoa NÃO recria a tela: o
-// Vue Router reaproveita o componente e só muda a prop/o parâmetro. O watch
-// observa os dois e recarrega.
-watch(() => [props.kind, route.params.username], loadList, { immediate: true })
+const profile = computed(() => data.value?.profile ?? null)
+const people = computed(() => data.value?.people ?? [])
+const displayName = computed(() => profile.value?.fullName || profile.value?.username || '')
 </script>
 
 <template>
@@ -82,7 +66,7 @@ watch(() => [props.kind, route.params.username], loadList, { immediate: true })
 
     <div v-if="isLoading" class="text-muted">Carregando...</div>
 
-    <div v-else-if="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+    <div v-else-if="error" class="alert alert-danger" role="alert">{{ error }}</div>
 
     <div v-else-if="people.length === 0" class="text-muted">
       <template v-if="kind === 'followers'">{{ displayName }} ainda não tem seguidores.</template>

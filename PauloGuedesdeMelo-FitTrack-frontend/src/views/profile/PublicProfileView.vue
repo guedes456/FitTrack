@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAsyncData } from '../../composables/useAsyncData'
 import { getPublicProfile } from '../../services/userService'
 import { getProfilePictureUrl } from '../../utils/media'
 import WorkoutCard from '../../components/workout/WorkoutCard.vue'
@@ -8,39 +8,21 @@ import FollowButton from '../../components/profile/FollowButton.vue'
 
 const route = useRoute()
 
-const profile = ref(null)
-const isLoading = ref(true)
-const errorMessage = ref('')
-
-async function loadProfile(username) {
-  isLoading.value = true
-  errorMessage.value = ''
-  profile.value = null
-
-  try {
-    const response = await getPublicProfile(username)
-    profile.value = response.data
-  } catch (error) {
-    // 404 (usuário inexistente) ou falha de rede: mensagem na tela, sem quebrar.
-    errorMessage.value = error.message
-  } finally {
-    isLoading.value = false
-  }
-}
-
 // Ao clicar no autor de um card e cair em outro perfil, a rota é a MESMA
 // (/profile/:username) com outro parâmetro: o Vue Router reaproveita este
-// componente em vez de recriá-lo. Por isso observamos o parâmetro — sem o
-// watch, a tela continuaria mostrando o perfil anterior.
-watch(() => route.params.username, (username) => loadProfile(username), { immediate: true })
+// componente. O watch faz o composable recarregar quando o parâmetro muda.
+const { data: profile, isLoading, error } = useAsyncData(
+  () => getPublicProfile(route.params.username).then((response) => response.data),
+  { watch: () => route.params.username }
+)
 </script>
 
 <template>
   <div class="p-4">
     <div v-if="isLoading" class="text-muted">Carregando perfil...</div>
 
-    <div v-else-if="errorMessage" class="alert alert-danger" role="alert">
-      <p class="mb-2">{{ errorMessage }}</p>
+    <div v-else-if="error" class="alert alert-danger" role="alert">
+      <p class="mb-2">{{ error }}</p>
       <router-link to="/feed" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Voltar ao Feed
       </router-link>

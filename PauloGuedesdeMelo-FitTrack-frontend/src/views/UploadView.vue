@@ -1,12 +1,10 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { createWorkout } from '../services/workoutService'
+import { LIMITS } from '../config/constants'
 import FormCard from '../components/base/FormCard.vue'
 import BaseInput from '../components/base/BaseInput.vue'
 import BaseButton from '../components/base/BaseButton.vue'
-
-const TITLE_MAX = 60
-const DESCRIPTION_MAX = 300
 
 
 const form = reactive({
@@ -55,12 +53,12 @@ function validate() {
 
   if (!form.title.trim()) {
     errors.title = 'O título é obrigatório.'
-  } else if (form.title.trim().length > TITLE_MAX) {
-    errors.title = `O título deve ter no máximo ${TITLE_MAX} caracteres.`
+  } else if (form.title.trim().length > LIMITS.TITLE_MAX) {
+    errors.title = `O título deve ter no máximo ${LIMITS.TITLE_MAX} caracteres.`
   }
 
-  if (form.description.length > DESCRIPTION_MAX) {
-    errors.description = `A descrição deve ter no máximo ${DESCRIPTION_MAX} caracteres.`
+  if (form.description.length > LIMITS.DESCRIPTION_MAX) {
+    errors.description = `A descrição deve ter no máximo ${LIMITS.DESCRIPTION_MAX} caracteres.`
   }
 
   if (!selectedFile.value) {
@@ -127,7 +125,7 @@ async function handleSubmit() {
         id="title"
         v-model="form.title"
         label="Título"
-        :maxlength="TITLE_MAX"
+        :maxlength="LIMITS.TITLE_MAX"
         :error="errors.title"
         required
       />
@@ -138,7 +136,7 @@ async function handleSubmit() {
         label="Descrição"
         multiline
         :rows="3"
-        :maxlength="DESCRIPTION_MAX"
+        :maxlength="LIMITS.DESCRIPTION_MAX"
         :error="errors.description"
       />
 

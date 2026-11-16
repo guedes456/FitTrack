@@ -18,13 +18,12 @@
 // erro cada uma do seu jeito.
 
 import axios from 'axios'
+import { STORAGE_KEYS, MESSAGES } from '../config/constants'
+import { useToast } from '../composables/useToast'
 
-// Chaves duplicadas aqui de propósito (batem com stores/auth.js). Este
-// arquivo NÃO importa a store: se importasse, teríamos um ciclo
-// api.js -> stores/auth.js -> services/authService.js -> api.js.
-// Ler o token direto do localStorage evita essa dependência circular.
-const TOKEN_KEY = 'fittrack_token'
-const USER_KEY = 'fittrack_user'
+// Este arquivo NÃO importa a store de auth (ciclo api.js -> stores/auth.js ->
+// authService.js -> api.js): lê o token direto do localStorage, usando as
+// chaves compartilhadas de config/constants.js.
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -35,24 +34,40 @@ const api = axios.create({
 
 // Interceptor de requisição: anexa o token, se existir, em toda chamada.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY)
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
 
+// QUEM AVISA O USUÁRIO quando algo falha:
+//  - AÇÃO (POST/PUT/DELETE) que falha -> toast, aqui, salvo `silent: true`
+//    (formulários mostram o erro ao lado do campo; toast seria duplicado);
+//  - LEITURA (GET) que falha -> é da TELA, que mostra o erro no lugar do
+//    conteúdo. Toast para toda leitura encheria a tela de avisos;
+//  - 401 -> o usuário é levado ao login (sem toast: a tela já vai mudar).
+// "Toast para todo erro" seria erro de design: o mesmo problema seria
+// avisado duas vezes (toast + tela/formulário).
+function notifyIfNeeded(error, config) {
+  const isAction = (config?.method || 'get').toLowerCase() !== 'get'
+  if (!isAction || config?.silent || error.status === 401) return
+  useToast().error(error.message)
+}
+
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    let apiError
+
     if (error.response) {
-      const apiError = error.response.data
+      const data = error.response.data || {}
 
       if (error.response.status === 401) {
         // Sessão inválida ou expirada: limpamos tudo e mandamos o usuário
         // de volta ao Login, preservando para onde ele queria ir.
-        localStorage.removeItem(TOKEN_KEY)
-        localStorage.removeItem(USER_KEY)
+        localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.USER)
 
         const currentPath = window.location.pathname + window.location.search
         if (!currentPath.startsWith('/login')) {
@@ -60,24 +75,20 @@ api.interceptors.response.use(
         }
       }
 
-      return Promise.reject({
-        message: apiError.message || 'Ocorreu um erro na requisição.',
-        errors: apiError.errors || [],
+      apiError = {
+        message: data.message || MESSAGES.GENERIC_ERROR,
+        errors: data.errors || [],
         status: error.response.status,
-      })
+      }
     } else if (error.request) {
-      return Promise.reject({
-        message: 'Não foi possível se conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.',
-        errors: [],
-        status: null,
-      })
+      // Requisição enviada, nenhuma resposta (API fora do ar, Offline).
+      apiError = { message: MESSAGES.NETWORK_ERROR, errors: [], status: null }
     } else {
-      return Promise.reject({
-        message: 'Erro inesperado ao preparar a requisição.',
-        errors: [],
-        status: null,
-      })
+      apiError = { message: MESSAGES.REQUEST_SETUP_ERROR, errors: [], status: null }
     }
+
+    notifyIfNeeded(apiError, error.config)
+    return Promise.reject(apiError)
   }
 )
 

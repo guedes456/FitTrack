@@ -1,4 +1,5 @@
 const multer = require('multer');
+const { UPLOAD } = require('../config/constants');
 const path = require('path');
 const fs = require('fs');
 
@@ -38,7 +39,7 @@ function fileFilter(req, file, cb) {
 const profileMulter = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: UPLOAD.PROFILE_IMAGE_MAX_BYTES }
 });
 
 module.exports = profileMulter;

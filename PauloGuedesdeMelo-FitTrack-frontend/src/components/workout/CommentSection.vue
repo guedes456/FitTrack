@@ -1,12 +1,14 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
+import { useAsyncData } from '../../composables/useAsyncData'
+import { LIMITS } from '../../config/constants'
 import { getComments, addComment } from '../../services/commentService'
 import { getProfilePictureUrl } from '../../utils/media'
 import { formatDateTime } from '../../utils/format'
 
-const COMMENT_MAX = 500
+const COMMENT_MAX = LIMITS.COMMENT_MAX
 
 const props = defineProps({
   workoutId: { type: [Number, String], required: true },
@@ -17,28 +19,16 @@ const emit = defineEmits(['added'])
 const route = useRoute()
 const { isAuthenticated } = useAuth()
 
-const comments = ref([])
-const isLoading = ref(true)
-const loadError = ref('')
+// Leitura: a falha aparece aqui, no lugar da lista (loadError).
+const { data, isLoading, error: loadError } = useAsyncData(
+  () => getComments(props.workoutId).then((response) => response.data),
+  { watch: () => props.workoutId }
+)
+const comments = computed(() => data.value ?? [])
 
 const text = ref('')
 const formError = ref('')
 const isSending = ref(false)
-
-async function loadComments(workoutId) {
-  isLoading.value = true
-  loadError.value = ''
-  try {
-    const response = await getComments(workoutId)
-    comments.value = response.data
-  } catch (error) {
-    loadError.value = error.message
-  } finally {
-    isLoading.value = false
-  }
-}
-
-watch(() => props.workoutId, (id) => loadComments(id), { immediate: true })
 
 function validate() {
   const trimmed = text.value.trim()
@@ -63,10 +53,11 @@ async function handleSubmit() {
     const response = await addComment(props.workoutId, text.value.trim())
     // O novo comentário entra no TOPO da lista que já está na tela, sem
     // recarregar tudo (a API já devolve o autor junto).
-    comments.value.unshift(response.data)
+    data.value = [response.data, ...comments.value]
     text.value = ''
     emit('added', response.data)
   } catch (error) {
+    // Formulário: o erro fica junto do campo (o service é silent, sem toast).
     formError.value = error.message
   } finally {
     isSending.value = false

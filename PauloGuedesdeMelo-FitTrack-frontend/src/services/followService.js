@@ -1,4 +1,5 @@
 import api from './api'
+import { PAGE_SIZE } from '../config/constants'
 
 // Seguir / deixar de seguir (toggle). Exige login: o token vai pelo
 // interceptor do api.js. Resposta: { isFollowing, followersCount } já com o
@@ -17,6 +18,6 @@ export function getFollowing(userId) {
 }
 
 // Feed só com os treinos de quem eu sigo (paginado, como o Feed Geral).
-export function getFollowingWorkouts(page = 1, limit = 12) {
+export function getFollowingWorkouts(page = 1, limit = PAGE_SIZE) {
   return api.get('/following-workouts', { params: { page, limit } })
 }

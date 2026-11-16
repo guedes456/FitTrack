@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAsyncData } from '../composables/useAsyncData'
 import { getWorkoutById } from '../services/userService'
 import { getWorkoutImageUrl, getProfilePictureUrl } from '../utils/media'
 import { formatDate } from '../utils/format'
@@ -9,35 +10,16 @@ import CommentSection from '../components/workout/CommentSection.vue'
 
 const route = useRoute()
 
-const workout = ref(null)
-// Vem da API (true só quando o token enviado é do dono do treino). Ainda não
-// aparece na tela: na Aula 09 vai decidir se os botões de editar/excluir
-// são exibidos.
-const isOwner = ref(false)
-const isLoading = ref(true)
-const errorMessage = ref('')
+// watch: se o :id da URL mudar sem a tela ser recriada, recarrega (e a
+// resposta mais antiga, se chegar atrasada, é descartada pelo composable).
+const { data: workout, isLoading, error } = useAsyncData(
+  () => getWorkoutById(route.params.id).then((response) => response.data),
+  { watch: () => route.params.id }
+)
 
-async function loadWorkout(id) {
-  isLoading.value = true
-  errorMessage.value = ''
-  workout.value = null
-
-  try {
-    const response = await getWorkoutById(id)
-    workout.value = response.data
-    isOwner.value = response.data.isOwner
-  } catch (error) {
-    // 404 (treino inexistente) ou falha de rede: a tela mostra a mensagem
-    // da API em vez de quebrar.
-    errorMessage.value = error.message
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// immediate: carrega ao abrir a tela; e recarrega se o :id da URL mudar
-// sem a tela ser recriada.
-watch(() => route.params.id, (id) => loadWorkout(id), { immediate: true })
+// Vem da API (true só quando o token enviado é do dono do treino): decide se
+// o botão de editar aparece.
+const isOwner = computed(() => workout.value?.isOwner ?? false)
 
 // A seção de comentários avisa quando um comentário novo foi publicado, para
 // o contador do treino subir sem recarregar a tela.
@@ -50,8 +32,8 @@ function handleCommentAdded() {
   <div class="p-4">
     <div v-if="isLoading" class="text-muted">Carregando treino...</div>
 
-    <div v-else-if="errorMessage" class="alert alert-danger" role="alert">
-      <p class="mb-2">{{ errorMessage }}</p>
+    <div v-else-if="error" class="alert alert-danger" role="alert">
+      <p class="mb-2">{{ error }}</p>
       <router-link to="/feed" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Voltar ao Feed
       </router-link>

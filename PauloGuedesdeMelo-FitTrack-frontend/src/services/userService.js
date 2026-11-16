@@ -1,4 +1,5 @@
 import api from './api'
+import { PAGE_SIZE } from '../config/constants'
 
 export function getMyProfile() {
   return api.get('/profile/me')
@@ -20,13 +21,14 @@ export function getPublicProfile(username) {
 export function updateProfile(formData) {
   return api.put('/profile/me', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    silent: true,
   })
 }
 
 // Feed paginado: o cliente pede "página N com L itens"; a API converte isso
 // em offset = (page - 1) * limit. O token vai sozinho pelo interceptor do
 // api.js — o feed é protegido.
-export function getFeed(page = 1, limit = 12) {
+export function getFeed(page = 1, limit = PAGE_SIZE) {
   return api.get('/feed', { params: { page, limit } })
 }
 
@@ -54,6 +56,7 @@ export function getWorkoutForEdit(id) {
 export function updateWorkout(id, formData) {
   return api.put(`/workouts/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    silent: true,
   })
 }
 

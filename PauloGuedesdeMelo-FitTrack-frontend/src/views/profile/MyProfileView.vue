@@ -3,11 +3,10 @@ import { reactive, ref, onMounted } from 'vue'
 import { getMyProfile, updateProfile } from '../../services/userService'
 import { getProfilePictureUrl } from '../../utils/media'
 import { useAuthStore } from '../../stores/auth'
+import { LIMITS } from '../../config/constants'
 import FormCard from '../../components/base/FormCard.vue'
 import BaseInput from '../../components/base/BaseInput.vue'
 import BaseButton from '../../components/base/BaseButton.vue'
-
-const BIO_MAX = 160
 
 const authStore = useAuthStore()
 
@@ -69,8 +68,8 @@ function validate() {
     errors.fullName = 'O nome completo é obrigatório.'
   }
 
-  if (form.bio.length > BIO_MAX) {
-    errors.bio = `A bio deve ter no máximo ${BIO_MAX} caracteres.`
+  if (form.bio.length > LIMITS.BIO_MAX) {
+    errors.bio = `A bio deve ter no máximo ${LIMITS.BIO_MAX} caracteres.`
   }
 
   return Object.values(errors).every((message) => message === '')
@@ -164,7 +163,7 @@ async function handleSubmit() {
         label="Bio"
         multiline
         :rows="3"
-        :maxlength="BIO_MAX"
+        :maxlength="LIMITS.BIO_MAX"
         :error="errors.bio"
       />
 

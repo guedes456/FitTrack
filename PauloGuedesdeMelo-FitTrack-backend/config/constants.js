@@ -17,11 +17,18 @@ module.exports = {
     // Limite do texto de um comentário (Aula 10).
     COMMENT_MAX: 500
   },
-  // Paginação do feed (Aula 08). MAX_LIMIT impede que o cliente peça
-  // ?limit=100000 e faça o banco devolver a tabela inteira de uma vez.
+  // Paginação dos feeds (Aula 08, consolidada no Checkpoint 2 / Aula 12).
+  // MAX_LIMIT impede que o cliente peça ?limit=100000 e faça o banco devolver
+  // a tabela inteira de uma vez. Deve combinar com PAGE_SIZE do front-end.
   PAGINATION: {
     DEFAULT_PAGE: 1,
     DEFAULT_LIMIT: 12,
     MAX_LIMIT: 50
+  },
+  // Tamanho máximo dos uploads, em bytes. Ficam aqui (e não escritos nos dois
+  // Multers) para que a mensagem de erro do errorHandler use o mesmo número.
+  UPLOAD: {
+    WORKOUT_IMAGE_MAX_BYTES: 8 * 1024 * 1024,
+    PROFILE_IMAGE_MAX_BYTES: 5 * 1024 * 1024
   }
 };

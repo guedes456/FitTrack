@@ -1,4 +1,5 @@
 const multer = require('multer');
+const { UPLOAD } = require('../config/constants');
 const path = require('path');
 const fs = require('fs');
 
@@ -39,7 +40,7 @@ function fileFilter(req, file, cb) {
 const workoutMulter = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 8 * 1024 * 1024 } // 8MB
+  limits: { fileSize: UPLOAD.WORKOUT_IMAGE_MAX_BYTES }
 });
 
 module.exports = workoutMulter;
