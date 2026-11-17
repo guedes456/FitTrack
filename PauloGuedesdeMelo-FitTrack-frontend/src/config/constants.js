@@ -18,6 +18,18 @@ export const LIMITS = {
   TITLE_MAX: 60,
   DESCRIPTION_MAX: 300,
   COMMENT_MAX: 500,
+  // Rotinas (Aula 13): iguais a VALIDATION.ROUTINE_* da API.
+  ROUTINE_TITLE_MIN: 3,
+  ROUTINE_TITLE_MAX: 100,
+  ROUTINE_DESCRIPTION_MAX: 500,
+}
+
+// Busca (Aula 13). MIN_LENGTH é igual ao da API (SEARCH.MIN_LENGTH): abaixo
+// disso nem fazemos requisição. DEBOUNCE_MS é quanto tempo, sem digitar, o
+// termo precisa ficar parado antes de a busca disparar.
+export const SEARCH = {
+  MIN_LENGTH: 2,
+  DEBOUNCE_MS: 400,
 }
 
 // Itens por página nos feeds (igual a PAGINATION.DEFAULT_LIMIT da API; o
@@ -40,4 +52,6 @@ export const MESSAGES = {
   LIKE_ERROR: 'Não foi possível registrar sua curtida.',
   FOLLOW_ERROR: 'Não foi possível concluir. Tente novamente.',
   WORKOUT_DELETED: 'Treino excluído com sucesso.',
+  ROUTINE_DELETED: 'Rotina excluída com sucesso.',
+  WORKOUT_REMOVED_FROM_ROUTINE: 'Treino removido da rotina.',
 }

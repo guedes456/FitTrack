@@ -13,8 +13,14 @@ import { ref, watch, onMounted } from 'vue'
 //   watch: função que devolve o que, ao mudar, dispara nova carga
 //          (ex.: () => route.params.id)
 //   immediate: carrega já ao montar (padrão true)
-export function useAsyncData(fetcher, { watch: watchSource, immediate = true } = {}) {
-  const data = ref(null)
+//   initialData: valor de `data` antes (e entre) as cargas; com [] a tela
+//                pode usar data.length sem checar null (padrão null)
+export function useAsyncData(fetcher, { watch: watchSource, immediate = true, initialData = null } = {}) {
+  // Cópia para arrays: se todos partilhassem a MESMA instância, mexer numa
+  // lista (push, splice) alteraria o valor inicial das próximas cargas.
+  const fresh = () => (Array.isArray(initialData) ? [...initialData] : initialData)
+
+  const data = ref(fresh())
   const error = ref('')
   const isLoading = ref(immediate)
 
@@ -28,7 +34,7 @@ export function useAsyncData(fetcher, { watch: watchSource, immediate = true } =
     const callId = ++lastCallId
     isLoading.value = true
     error.value = ''
-    data.value = null
+    data.value = fresh()
 
     try {
       const result = await fetcher()

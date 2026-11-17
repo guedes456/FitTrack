@@ -12,6 +12,11 @@ const routes = [
   { path: '/treinos/:id/editar', name: 'workout-edit', component: () => import('../views/EditWorkoutView.vue'), meta: { requiresAuth: true } },
   { path: '/curtidos', name: 'liked-workouts', component: () => import('../views/LikedWorkoutsView.vue'), meta: { requiresAuth: true } },
   { path: '/meus-treinos', name: 'my-workouts', component: () => import('../views/MyWorkoutsView.vue'), meta: { requiresAuth: true } },
+  // Rotinas (Aula 13). A lista é só para quem está logado; o DETALHE é público
+  // (sem requiresAuth): o link de uma rotina pública abre para qualquer pessoa,
+  // e a API decide se mostra (200) ou responde 403 (privada) / 404.
+  { path: '/minhas-rotinas', name: 'my-routines', component: () => import('../views/MyRoutinesView.vue'), meta: { requiresAuth: true } },
+  { path: '/rotinas/:id', name: 'routine-detail', component: () => import('../views/RoutineDetailView.vue') },
   { path: '/sugestoes', name: 'suggestions', component: () => import('../views/SuggestionsView.vue'), meta: { requiresAuth: true } },
   { path: '/upload', name: 'upload', component: () => import('../views/UploadView.vue'), meta: { requiresAuth: true } },
   { path: '/meu-progresso', name: 'my-progress', component: () => import('../views/MyProgressView.vue'), meta: { requiresAuth: true } },

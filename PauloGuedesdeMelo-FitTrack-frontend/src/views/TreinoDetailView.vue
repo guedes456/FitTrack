@@ -1,12 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncData } from '../composables/useAsyncData'
+import { useAuthenticatedAction } from '../composables/useAuthenticatedAction'
 import { getWorkoutById } from '../services/userService'
 import { getWorkoutImageUrl, getProfilePictureUrl } from '../utils/media'
 import { formatDate } from '../utils/format'
 import LikeButton from '../components/workout/LikeButton.vue'
 import CommentSection from '../components/workout/CommentSection.vue'
+import AddToRoutineModal from '../components/routine/AddToRoutineModal.vue'
 
 const route = useRoute()
 
@@ -20,6 +22,16 @@ const { data: workout, isLoading, error } = useAsyncData(
 // Vem da API (true só quando o token enviado é do dono do treino): decide se
 // o botão de editar aparece.
 const isOwner = computed(() => workout.value?.isOwner ?? false)
+
+// Botão "Salvar": visível para TODOS. A cerca do useAuthenticatedAction leva
+// o visitante ao login (com redirect de volta a este treino); quem está logado
+// abre o modal. showSave é o interruptor do v-if do modal: com v-if, o modal é
+// criado a cada abertura e busca o status atualizado (F5 e reabrir mostra o
+// que o servidor tem).
+const showSave = ref(false)
+const { run: openSave } = useAuthenticatedAction(() => {
+  showSave.value = true
+})
 
 // A seção de comentários avisa quando um comentário novo foi publicado, para
 // o contador do treino subir sem recarregar a tela.
@@ -94,7 +106,13 @@ function handleCommentAdded() {
           :initial-count="workout.likesCount"
         />
         <span class="text-muted pt-1"><i class="bi bi-chat me-1"></i>{{ workout.commentsCount }}</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" @click="openSave">
+          <i class="bi bi-bookmark-plus me-1"></i>Salvar
+        </button>
       </div>
+
+      <!-- Dentro do bloco que já tem o treino carregado: workout.id existe. -->
+      <AddToRoutineModal v-if="showSave" v-model="showSave" :workout-id="workout.id" />
 
       <p v-if="workout.description" class="mt-3" style="white-space: pre-line;">
         {{ workout.description }}

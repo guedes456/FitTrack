@@ -25,6 +25,17 @@ function onKeydown(event) {
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
+// Barra de busca: Enter (ou o botão de lupa) leva à tela de busca com o termo
+// na URL (?q=) e limpa o campo. Vazio é ignorado. Visível também para visitantes.
+const searchText = ref('')
+
+function submitSearch() {
+  const q = searchText.value.trim()
+  if (!q) return
+  router.push({ name: 'search', query: { q } })
+  searchText.value = ''
+}
+
 async function handleLogout() {
   closeMenu()
   await logout()
@@ -42,9 +53,18 @@ async function handleLogout() {
       <router-link to="/feed" class="nav-link-custom">
         <i class="bi bi-collection-play me-1"></i>Feed
       </router-link>
-      <router-link to="/busca" class="nav-link-custom">
-        <i class="bi bi-search me-1"></i>Buscar
-      </router-link>
+      <form class="nav-search" role="search" @submit.prevent="submitSearch">
+        <input
+          v-model="searchText"
+          type="search"
+          class="nav-search-input"
+          placeholder="Buscar treinos e pessoas"
+          aria-label="Buscar treinos e pessoas"
+        />
+        <button type="submit" class="nav-search-button" aria-label="Buscar">
+          <i class="bi bi-search"></i>
+        </button>
+      </form>
 
       <template v-if="isAuthenticated">
         <router-link to="/notificacoes" class="nav-link-custom">
@@ -77,6 +97,9 @@ async function handleLogout() {
             <router-link to="/meus-treinos" role="menuitem" @click="closeMenu">
               <i class="bi bi-grid me-2"></i>Meus Itens
             </router-link>
+            <router-link to="/minhas-rotinas" role="menuitem" @click="closeMenu">
+              <i class="bi bi-collection me-2"></i>Minhas Rotinas
+            </router-link>
             <router-link to="/curtidos" role="menuitem" @click="closeMenu">
               <i class="bi bi-heart me-2"></i>Curtidos
             </router-link>
@@ -105,6 +128,39 @@ async function handleLogout() {
   color: #ddd;
 }
 .nav-link-custom:hover {
+  color: #fff;
+}
+
+.nav-search {
+  display: flex;
+  align-items: center;
+}
+.nav-search-input {
+  width: 210px;
+  padding: 0.25rem 0.6rem;
+  background: #2b2b2b;
+  border: 1px solid #555;
+  border-right: 0;
+  border-radius: 999px 0 0 999px;
+  color: #eee;
+  font-size: 0.9rem;
+}
+.nav-search-input::placeholder {
+  color: #999;
+}
+.nav-search-input:focus {
+  outline: none;
+  border-color: #ff6b35;
+}
+.nav-search-button {
+  padding: 0.25rem 0.7rem;
+  background: #2b2b2b;
+  border: 1px solid #555;
+  border-radius: 0 999px 999px 0;
+  color: #ddd;
+  cursor: pointer;
+}
+.nav-search-button:hover {
   color: #fff;
 }
 

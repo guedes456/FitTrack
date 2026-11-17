@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useAuthenticatedAction } from '../../composables/useAuthenticatedAction'
+import { runOptimistic } from '../../utils/optimistic'
 import { toggleLike } from '../../services/likeService'
 import { formatCount } from '../../utils/format'
 
@@ -24,31 +25,30 @@ watch(
   }
 )
 
-// useAuthenticatedAction cuida da cerca (visitante vai ao login) e do isBusy
-// (clique durante uma requisição é ignorado: três cliques rápidos = uma
-// requisição). Quem avisa o erro ao usuário é o interceptor do Axios (toast).
-const { run: handleClick, isBusy } = useAuthenticatedAction(async () => {
-  // ATUALIZAÇÃO OTIMISTA, em três passos:
-  // 1) guardar o estado anterior;
-  const previous = { liked: liked.value, count: count.value }
-
-  // 2) mudar a interface NA HORA, sem esperar a API;
-  liked.value = !previous.liked
-  count.value = previous.count + (previous.liked ? -1 : 1)
-
-  try {
-    const response = await toggleLike(props.workoutId)
-    // 3) confirmar: o servidor é a fonte da verdade.
-    liked.value = response.data.liked
-    count.value = response.data.likesCount
-    emit('change', { liked: liked.value, likesCount: count.value })
-  } catch {
-    // 3') ou desfazer (rollback): a tela volta exatamente ao que era. O aviso
-    //     ao usuário (toast) já foi dado pelo interceptor.
-    liked.value = previous.liked
-    count.value = previous.count
-  }
-})
+// A cerca (visitante -> login) e o isBusy vêm do useAuthenticatedAction; o
+// miolo otimista (apply / request / confirm / undo) vem do runOptimistic. Aqui
+// só dizemos O QUE muda em cada passo. O aviso de erro é do interceptor.
+const { run: handleClick, isBusy } = useAuthenticatedAction(() =>
+  runOptimistic({
+    apply() {
+      // Guarda o estado anterior e muda a tela na hora; devolve o undo.
+      const previous = { liked: liked.value, count: count.value }
+      liked.value = !previous.liked
+      count.value = previous.count + (previous.liked ? -1 : 1)
+      return () => {
+        liked.value = previous.liked
+        count.value = previous.count
+      }
+    },
+    request: () => toggleLike(props.workoutId),
+    confirm(data) {
+      // O servidor é a fonte da verdade.
+      liked.value = data.liked
+      count.value = data.likesCount
+      emit('change', { liked: liked.value, likesCount: count.value })
+    },
+  })
+)
 </script>
 
 <template>

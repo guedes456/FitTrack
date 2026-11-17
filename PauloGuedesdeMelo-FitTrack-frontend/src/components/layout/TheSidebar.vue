@@ -15,6 +15,12 @@ const { isAuthenticated, isAdmin } = useAuth()
     <router-link to="/feed/seguindo" v-if="isAuthenticated">
       <i class="bi bi-people me-2"></i>Feed Seguindo
     </router-link>
+    <router-link to="/busca">
+      <i class="bi bi-compass me-2"></i>Explorar
+    </router-link>
+    <router-link to="/minhas-rotinas" v-if="isAuthenticated">
+      <i class="bi bi-collection me-2"></i>Minhas Rotinas
+    </router-link>
     <router-link to="/sugestoes" v-if="isAuthenticated">
       <i class="bi bi-stars me-2"></i>Sugestões
     </router-link>
