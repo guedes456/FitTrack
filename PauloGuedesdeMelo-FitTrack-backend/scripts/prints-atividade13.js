@@ -15,11 +15,18 @@
 //   node scripts/prints-atividade13.js regressao   -> teste 11
 //   node scripts/prints-atividade13.js             -> tudo
 //
+// MODO RELATÓRIO (tudo de uma vez, sem rolar o terminal):
+//   node scripts/prints-atividade13.js tudo --html
+// gera o arquivo relatorio-atividade13.html (nesta pasta). Abra-o no navegador
+// (duplo clique), navegue com as setas e tire um print de cada tela.
+//
 // Opcional: API_URL=http://localhost:3000/api node scripts/prints-atividade13.js
 // Cria (se não existirem) duas contas de teste: prints13_a e prints13_b. Antes
 // de cada rodada ele apaga as rotinas e os treinos DESSAS duas contas, para a
 // saída ficar sempre limpa e do tamanho de uma tela.
 
+const HTML = process.argv.includes('--html');
+const SECTION_ARG = process.argv.slice(2).find((a) => !a.startsWith('--'));
 const BASE = process.env.API_URL || 'http://localhost:3000/api';
 const PASSWORD = 'senha123';
 const C = { reset: '\x1b[0m', green: '\x1b[32m', red: '\x1b[31m', cyan: '\x1b[36m', dim: '\x1b[2m', bold: '\x1b[1m' };
@@ -28,6 +35,113 @@ const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64'
 );
+
+
+// ---------- Modo relatório (--html): captura a saída em vez de imprimir ----------
+const sections = [];
+const realLog = console.log;
+const stripAnsi = (text) => text.replace(/\x1b\[[0-9;]*m/g, '');
+
+function startSection(name) {
+  sections.push({ name, steps: [] });
+}
+function startStep() {
+  if (sections.length === 0) startSection('Preparação');
+  sections[sections.length - 1].steps.push({ lines: [] });
+}
+if (HTML) {
+  console.log = (...args) => {
+    const text = args.join(' ');
+    const firstLine = stripAnsi(text).replace(/^\n+/, '').split('\n')[0];
+    const isSeparator = /^═+$/.test(firstLine.trim());
+    if (isSeparator) return; // as barras ═ do título não entram: o relatório tem o seu
+    const begins = firstLine.startsWith('▶') || firstLine.startsWith('mysql>') || firstLine.startsWith('Resumo');
+    if (sections.length === 0) startSection('Preparação');
+    const current = sections[sections.length - 1];
+    if (begins || current.steps.length === 0) startStep();
+    current.steps[current.steps.length - 1].lines.push(text.replace(/^\n+/, ''));
+  };
+}
+
+function ansiToHtml(text) {
+  const map = { '32': 'g', '31': 'r', '36': 'c', '2': 'd', '1': 'b' };
+  const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let open = 0;
+  const out = esc.replace(/\x1b\[([0-9;]*)m/g, (_, code) => {
+    if (code === '0' || code === '') { const close = '</span>'.repeat(open); open = 0; return close; }
+    open++;
+    return `<span class="${map[code] || 'x'}">`;
+  });
+  return out + '</span>'.repeat(open);
+}
+
+function writeReport() {
+  const fs = require('fs');
+  const path = require('path');
+  const tests = sections.filter((sec) => sec.name !== 'Preparação' && sec.steps.length > 0);
+  const body = tests.map((sec, i) => `
+<section class="test" data-title="${sec.name.replace(/"/g, '&quot;')}">
+  <h2>${i + 1}/${tests.length} · ${sec.name.replace(/&/g, '&amp;')}</h2>
+  ${sec.steps.map((st) => `<pre class="step">${ansiToHtml(st.lines.join('\n'))}</pre>`).join('\n  ')}
+</section>`).join('\n');
+
+  const html = `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<title>Relatório da Atividade 13</title>
+<style>
+  body{margin:0;background:#1b1d1f;color:#d8dadc;font:15px/1.45 Consolas,"Cascadia Mono",monospace}
+  #bar{position:sticky;top:0;background:#0f1011;padding:8px 14px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #333;z-index:5}
+  #bar button{background:#2b2d30;color:#eee;border:1px solid #555;border-radius:6px;padding:4px 10px;cursor:pointer;font:inherit}
+  #bar span{color:#999;margin-left:auto}
+  main{max-width:860px;margin:0 auto;padding:14px 18px}
+  h2{font-size:15px;margin:0 0 10px;padding:6px 0;border-bottom:2px solid #444;color:#fff}
+  pre.step{margin:0 0 12px;white-space:pre-wrap;word-break:break-word}
+  .test{display:none}.test.on{display:block}
+  .single .step{display:none}.single .step.on{display:block}
+  .g{color:#3fb950}.r{color:#f85149}.c{color:#58a6ff}.d{color:#8b949e}.b{font-weight:700}
+  .hide #bar{display:none}
+</style></head>
+<body>
+<div id="bar">
+  <button id="prev">◀ Anterior</button><button id="next">Próximo ▶</button>
+  <button id="mode">Modo: um teste por tela</button>
+  <button id="hidebar">Ocultar barra (H)</button>
+  <span id="pos"></span>
+</div>
+<main id="main">${body}</main>
+<script>
+  const tests = [...document.querySelectorAll('.test')];
+  const main = document.getElementById('main');
+  let t = 0, s = 0, single = false;
+  function steps(){ return [...tests[t].querySelectorAll('.step')]; }
+  function render(){
+    tests.forEach((el,i)=>el.classList.toggle('on', i===t));
+    main.classList.toggle('single', single);
+    steps().forEach((el,i)=>el.classList.toggle('on', i===s));
+    document.getElementById('pos').textContent =
+      'Teste ' + (t+1) + '/' + tests.length + (single ? ' · curl ' + (s+1) + '/' + steps().length : '');
+    document.getElementById('mode').textContent = 'Modo: ' + (single ? 'um curl por tela' : 'um teste por tela');
+    window.scrollTo(0,0);
+  }
+  function next(){ if (single && s < steps().length-1) { s++; } else if (t < tests.length-1) { t++; s=0; } render(); }
+  function prev(){ if (single && s > 0) { s--; } else if (t > 0) { t--; s = single ? steps().length-1 : 0; } render(); }
+  document.getElementById('next').onclick = next;
+  document.getElementById('prev').onclick = prev;
+  document.getElementById('mode').onclick = () => { single = !single; s = 0; render(); };
+  const toggleBar = () => document.body.classList.toggle('hide');
+  document.getElementById('hidebar').onclick = toggleBar;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') next();
+    else if (e.key === 'ArrowLeft') prev();
+    else if (e.key.toLowerCase() === 'h') toggleBar();
+    else if (e.key.toLowerCase() === 'm') { single = !single; s = 0; render(); }
+  });
+  render();
+</script></body></html>`;
+  const file = path.join(process.cwd(), 'relatorio-atividade13.html');
+  fs.writeFileSync(file, html);
+  realLog(`\nRelatório gerado: ${file}\nAbra no navegador (duplo clique). Setas ← → navegam; H oculta a barra; M troca entre "um teste por tela" e "um curl por tela".`);
+}
 
 async function call(method, path, { token, json, form } = {}) {
   const headers = {};
@@ -82,6 +196,7 @@ async function step(label, method, path, expected, opts = {}, check = null) {
 }
 
 function title(text) {
+  if (HTML) startSection(text.replace(/^\d+\.\s*/, '').trim());
   console.log(`\n${C.bold}${'═'.repeat(64)}\n ${text}\n${'═'.repeat(64)}${C.reset}`);
 }
 
@@ -134,7 +249,7 @@ const addTo = (token, routineId, workoutId) =>
 const has = (cond, msg) => (cond ? null : msg);
 
 async function main() {
-  const section = (process.argv[2] || 'tudo').toLowerCase();
+  const section = (SECTION_ARG || 'tudo').toLowerCase();
   const valid = ['criar', 'listar', 'adicionar', 'remover', 'ler', 'status', 'excluir', 'contador', 'busca', 'banco', 'regressao', 'tudo'];
   if (!valid.includes(section)) {
     console.error(`Seção inválida. Use: ${valid.join(' | ')}`);
@@ -344,7 +459,13 @@ async function main() {
     await call('POST', `/users/${B.id}/toggle-follow`, { token: A.token });
   }
 
+  if (HTML) startSection('Resumo');
   console.log(`\n${C.bold}Resumo: ${C.green}${okCount} ok${C.reset}${C.bold}, ${failCount ? C.red : C.dim}${failCount} fora do esperado${C.reset}\n`);
+  if (HTML) {
+    // o resumo vira uma "seção" própria, para aparecer no relatório
+    writeReport();
+    realLog(`Resumo: ${okCount} ok, ${failCount} fora do esperado`);
+  }
   process.exit(failCount ? 1 : 0);
 }
 
