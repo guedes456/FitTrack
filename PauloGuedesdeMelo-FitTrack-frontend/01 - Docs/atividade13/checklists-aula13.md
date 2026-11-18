@@ -37,7 +37,7 @@ de alguém (nem o Perfil público, nem a busca).
 - [x] Busca consultando o banco, com escape, `Promise.all` e entrada tratada
 - [x] Controller `async`/`await` e rota com `asyncHandler`
 - [x] Exclusão do treino limpa a junção **e** desconta o contador de cada rotina, na mesma transação
-- [ ] Teste de controle feito e descrito (prints contador-controle.jpg e contador-certo.jpg)
+- [x] Teste de controle feito e descrito (prints contador-controle.jpg e contador-certo.jpg)
 - [x] Os onze testes da Etapa 6 executados com sucesso (um print de cada curl)
 
 ### Parte B — Frontend
