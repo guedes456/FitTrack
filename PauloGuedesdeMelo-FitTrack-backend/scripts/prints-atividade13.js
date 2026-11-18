@@ -165,7 +165,12 @@ function pretty(data) {
     if (Array.isArray(value) && value.length === 0) return value;
     if (Array.isArray(value) && typeof value[0] === 'object' && value[0] !== null) {
       return value.map((v) => {
-        if ('title' in v && 'user' in v) return `#${v.id} "${v.title}" por @${v.user ? v.user.username : '?'}`;
+        // Rotina (lista "minhas rotinas"): mostra o CONTADOR, que é o que os testes conferem.
+        if ('isPublic' in v && 'treinosCount' in v && !('hasWorkout' in v)) {
+          const n = v.treinosCount;
+          return `#${v.id} “${v.title}” · ${v.isPublic ? 'pública' : 'privada'} · treinosCount: ${n}`;
+        }
+        if ('title' in v && 'user' in v) return `#${v.id} “${v.title}” por @${v.user ? v.user.username : '?'}`;
         if ('username' in v) return `#${v.id} @${v.username} (${v.fullName})`;
         return v;
       });
