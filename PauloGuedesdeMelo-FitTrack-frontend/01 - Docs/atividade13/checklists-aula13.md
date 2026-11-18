@@ -44,13 +44,13 @@ de alguém (nem o Perfil público, nem a busca).
 - [x] Constantes, service com as sete funções; a Home já estava limpa (a `LandingView` só consulta o status da API, não chama `search`)
 - [x] `runOptimistic` criado
 - [x] Os dois botões (curtir e seguir) refatorados para usá-lo, sem mudar o `<template>` nem a cerca
-- [ ] Os dois botões testados no navegador, sem regressão (otimista, Offline com rollback, visitante)
+- [x] Os dois botões testados no navegador, sem regressão (otimista, Offline com rollback, visitante)
 - [x] Modal de criação, lista e detalhe implementados, com 403 / 404 na própria tela
 - [x] Cartão clicável (`stretched-link`) com botão "Excluir" por cima
 - [x] Modal de criação, lista e detalhe testados no navegador (colecao-privada.jpg, detalhe-colecao.jpg, colecao-privada-visitante.jpg)
 - [x] Modal "Salvar" com caixas marcadas conforme o servidor, otimista por linha, com rollback e cerca por linha
 - [x] Botão "Salvar" no Detalhe, com o comportamento do visitante
-- [ ] Modal "Salvar" testado no navegador (Slow 4G, Offline, dois cliques rápidos)
+- [x] Modal "Salvar" testado no navegador (Slow 4G, Offline, dois cliques rápidos)
 - [x] `useDebouncedValue`, `SearchView` com o termo na URL (`?q=`), barra de busca na Navbar e "Minhas Rotinas" no menu do avatar e na Sidebar
-- [ ] Digitar uma palavra inteira sem pausa gera **uma** requisição (Network); F5 e link funcionam; Voltar não passa por cada pausa
-- [ ] Teste prático completo (os seis passos), sem digitar nenhuma URL
+- [x] Digitar uma palavra inteira sem pausa gera **uma** requisição (Network); F5 e link funcionam; Voltar não passa por cada pausa
+- [x] Teste prático completo (os seis passos), sem digitar nenhuma URL
