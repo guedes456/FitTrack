@@ -185,7 +185,7 @@ de alguém (nem o Perfil público, nem a busca).
 - [x] Constantes de validação e de busca criadas (`ROUTINE_TITLE_MIN/MAX`, `ROUTINE_DESCRIPTION_MAX`, `SEARCH`)
 - [x] `utils/parseId.js` criado e usado pelo `followController` (sem a função antiga)
 - [x] Dois models (`Routine`, `RoutineWorkout`) e seis associações
-- [ ] Tabelas, índices e chaves estrangeiras conferidos no banco (print colecoes-banco.jpg)
+- [x] Tabelas, índices e chaves estrangeiras conferidos no banco (print colecoes-banco.jpg)
 - [x] Quatro arquivos do módulo `routine`, registrados no `app.js`
 - [x] Duas escritas (linha + contador) numa só transação, nas três operações
 - [x] 403 para privada de outra pessoa; `isOwner` correto para dona, outra pessoa e visitante
@@ -193,7 +193,7 @@ de alguém (nem o Perfil público, nem a busca).
 - [x] Controller `async`/`await` e rota com `asyncHandler`
 - [x] Exclusão do treino limpa a junção **e** desconta o contador de cada rotina, na mesma transação
 - [ ] Teste de controle feito e descrito (prints contador-controle.jpg e contador-certo.jpg)
-- [ ] Os onze testes da Etapa 6 executados com sucesso (um print de cada curl)
+- [x] Os onze testes da Etapa 6 executados com sucesso (um print de cada curl)
 
 ### Parte B — Frontend
 - [x] Constantes, service com as sete funções; a Home já estava limpa (a `LandingView` só consulta o status da API, não chama `search`)
@@ -202,7 +202,7 @@ de alguém (nem o Perfil público, nem a busca).
 - [ ] Os dois botões testados no navegador, sem regressão (otimista, Offline com rollback, visitante)
 - [x] Modal de criação, lista e detalhe implementados, com 403 / 404 na própria tela
 - [x] Cartão clicável (`stretched-link`) com botão "Excluir" por cima
-- [ ] Modal de criação, lista e detalhe testados no navegador
+- [x] Modal de criação, lista e detalhe testados no navegador (colecao-privada.jpg, detalhe-colecao.jpg, colecao-privada-visitante.jpg)
 - [x] Modal "Salvar" com caixas marcadas conforme o servidor, otimista por linha, com rollback e cerca por linha
 - [x] Botão "Salvar" no Detalhe, com o comportamento do visitante
 - [ ] Modal "Salvar" testado no navegador (Slow 4G, Offline, dois cliques rápidos)
