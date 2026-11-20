@@ -42,7 +42,17 @@ export function usePaginatedList(fetchPage, { pageSize = PAGE_SIZE } = {}) {
 
   const loadMore = () => loadPage(currentPage.value + 1)
 
+  // "Atualizar": recomeça da página 1 com a lista vazia (traz o que chegou
+  // depois da última carga). O lastCallId do loadPage descarta qualquer
+  // resposta antiga que ainda estivesse a caminho.
+  function reload() {
+    items.value = []
+    currentPage.value = 0
+    hasMore.value = false
+    return loadPage(1)
+  }
+
   onMounted(() => loadPage(1))
 
-  return { items, hasMore, isLoading, error, loadMore }
+  return { items, hasMore, isLoading, error, loadMore, reload }
 }

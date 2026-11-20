@@ -4,13 +4,16 @@ const User = require('../user/userModel');
 const Like = require('./likeModel');
 const { AUTHOR_ATTRIBUTES, toPublicWorkout } = require('../workout/workoutService');
 const { httpError, parseId } = require('../../utils/httpError');
+const { createNotification, removeNotification } = require('../notification/notificationService');
+const { NOTIFICATION } = require('../../config/constants');
 
 /**
- * Curtir / descurtir (toggle). Cada curtida mexe em DUAS coisas: a linha em
- * `likes` e o contador `likesCount` do treino. Se só uma das duas mudasse
- * (um erro no meio do caminho), o contador guardado ficaria diferente do
- * número real de linhas. Por isso as duas escritas acontecem dentro de uma
- * transação: ou as duas valem, ou nenhuma.
+ * Curtir / descurtir (toggle). Cada curtida mexe em TRÊS coisas: a linha em
+ * `likes`, o contador `likesCount` do treino e a NOTIFICAÇÃO para o dono do
+ * treino. Se só uma delas mudasse (um erro no meio do caminho), o contador
+ * ficaria diferente do número real de linhas ou o dono seria avisado de uma
+ * curtida que não existe. Por isso as três escritas acontecem dentro de uma
+ * transação: ou todas valem, ou nenhuma.
  *
  * ATENÇÃO à ordem dos parâmetros: (userId, workoutId). São dois inteiros,
  * então trocá-los não dá erro nenhum — só curtidas gravadas no lugar errado.
@@ -42,12 +45,26 @@ async function toggleLike(userId, workoutId) {
       if (existing) {
         await existing.destroy({ transaction: t });
         await workout.decrement('likesCount', { by: 1, transaction: t });
+        // Descurtir APAGA o aviso: sem a curtida, não há o que avisar (e o
+        // dono não fica com um "curtiu" de alguém que desistiu). Se o autor
+        // curtiu o próprio treino, o aviso nunca existiu e o destroy não
+        // acha nada.
+        await removeNotification(
+          { userId: workout.userId, actorId: userId, type: NOTIFICATION.TYPES.LIKE, workoutId: id },
+          t
+        );
         await workout.reload({ transaction: t });
         return { liked: false, likesCount: workout.likesCount };
       }
 
       await Like.create({ userId, workoutId: id }, { transaction: t });
       await workout.increment('likesCount', { by: 1, transaction: t });
+      // Destinatário: o DONO do treino; actorId: quem curtiu. O `t` é
+      // obrigatório (veja createNotification).
+      await createNotification(
+        { userId: workout.userId, actorId: userId, type: NOTIFICATION.TYPES.LIKE, workoutId: id },
+        t
+      );
       await workout.reload({ transaction: t });
       return { liked: true, likesCount: workout.likesCount };
     });

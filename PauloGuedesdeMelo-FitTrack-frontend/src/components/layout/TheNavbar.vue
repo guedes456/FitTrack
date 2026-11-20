@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { useClickOutside } from '../../composables/useClickOutside'
+import { useNotificationsStore } from '../../stores/notifications'
 
 const router = useRouter()
 const { isAuthenticated, username, profilePictureUrl, logout } = useAuth()
@@ -24,6 +25,26 @@ function onKeydown(event) {
 }
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
+
+// SINO: o número vem da store (que mantém o polling). O polling LIGA ao entrar
+// na conta (immediate: true cobre quem já abre o site logado) e DESLIGA ao
+// sair; o onUnmounted garante que nada continue rodando se a Navbar sair.
+const notifications = useNotificationsStore()
+const unreadCount = computed(() => notifications.unreadCount)
+const badgeText = computed(() => (unreadCount.value > 99 ? '99+' : String(unreadCount.value)))
+const bellLabel = computed(() =>
+  unreadCount.value > 0 ? `Notificações (${unreadCount.value} não lidas)` : 'Notificações'
+)
+
+watch(
+  isAuthenticated,
+  (loggedIn) => {
+    if (loggedIn) notifications.startPolling()
+    else notifications.stopPolling()
+  },
+  { immediate: true }
+)
+onUnmounted(() => notifications.stopPolling())
 
 // Barra de busca: Enter (ou o botão de lupa) leva à tela de busca com o termo
 // na URL (?q=) e limpa o campo. Vazio é ignorado. Visível também para visitantes.
@@ -67,8 +88,20 @@ async function handleLogout() {
       </form>
 
       <template v-if="isAuthenticated">
-        <router-link to="/notificacoes" class="nav-link-custom">
+        <!-- Só para quem está logado (este bloco é v-if isAuthenticated). O selo
+             só aparece com não lidas; o aria-label diz o número. -->
+        <router-link
+          :to="{ name: 'notifications' }"
+          class="nav-link-custom position-relative"
+          :aria-label="bellLabel"
+        >
           <i class="bi bi-bell me-1"></i>Notificações
+          <span
+            v-if="unreadCount > 0"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bell-badge"
+          >
+            {{ badgeText }}
+          </span>
         </router-link>
 
         <!-- O wrapper (ref) contém o botão E o menu: clicar no botão conta
@@ -129,6 +162,12 @@ async function handleLogout() {
 }
 .nav-link-custom:hover {
   color: #fff;
+}
+
+.bell-badge {
+  background: #ff6b35;
+  color: #fff;
+  font-size: 0.65rem;
 }
 
 .nav-search {

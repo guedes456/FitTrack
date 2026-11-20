@@ -12,18 +12,25 @@ var likeRoutes = require('./modules/like/likeRoutes');
 var commentRoutes = require('./modules/comment/commentRoutes');
 var followRoutes = require('./modules/follow/followRoutes');
 var routineRoutes = require('./modules/routine/routineRoutes');
+var notificationRoutes = require('./modules/notification/notificationRoutes');
+var reportRoutes = require('./modules/report/reportRoutes');
 var errorHandler = require('./middlewares/errorHandler');
 
 var app = express();
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
+// cors ANTES dos parsers: se o express.json() rejeitar um corpo inválido (400)
+// antes de o cors rodar, a resposta de erro sai SEM o cabeçalho
+// Access-Control-Allow-Origin e o navegador mostra "erro de CORS" no Console
+// em vez do 400 verdadeiro.
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true
 }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+
 
 // Serve os arquivos de uploads publicamente — precisa vir ANTES das rotas
 // da API, para que uma requisição a /uploads/... nunca caia no 404 handler.
@@ -37,6 +44,8 @@ app.use('/api', likeRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', followRoutes);
 app.use('/api', routineRoutes);
+app.use('/api', notificationRoutes);
+app.use('/api', reportRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

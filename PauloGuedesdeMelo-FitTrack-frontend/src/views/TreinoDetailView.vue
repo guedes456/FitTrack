@@ -9,6 +9,9 @@ import { formatDate } from '../utils/format'
 import LikeButton from '../components/workout/LikeButton.vue'
 import CommentSection from '../components/workout/CommentSection.vue'
 import AddToRoutineModal from '../components/routine/AddToRoutineModal.vue'
+import ReportWorkoutModal from '../components/workout/ReportWorkoutModal.vue'
+import { useToast } from '../composables/useToast'
+import { MESSAGES } from '../config/constants'
 
 const route = useRoute()
 
@@ -32,6 +35,23 @@ const showSave = ref(false)
 const { run: openSave } = useAuthenticatedAction(() => {
   showSave.value = true
 })
+
+// Botão "Denunciar": invisível para o DONO (v-if="!isOwner"; esconder é
+// conforto, quem bloqueia é a API, que responde 400). Mesma cerca do "Salvar":
+// o visitante vai ao login e volta. O modal tem o interruptor v-if dentro do
+// bloco que já tem o treino carregado.
+const toast = useToast()
+const showReport = ref(false)
+const { run: openReport } = useAuthenticatedAction(() => {
+  showReport.value = true
+})
+
+// Sucesso: fecha o modal e mostra o toast verde (só toast.success nas telas;
+// o erro fica dentro do modal).
+function handleReported() {
+  showReport.value = false
+  toast.success(MESSAGES.REPORT_SENT)
+}
 
 // A seção de comentários avisa quando um comentário novo foi publicado, para
 // o contador do treino subir sem recarregar a tela.
@@ -109,10 +129,14 @@ function handleCommentAdded() {
         <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" @click="openSave">
           <i class="bi bi-bookmark-plus me-1"></i>Salvar
         </button>
+        <button v-if="!isOwner" type="button" class="btn btn-sm btn-outline-danger" @click="openReport">
+          <i class="bi bi-flag me-1"></i>Denunciar
+        </button>
       </div>
 
       <!-- Dentro do bloco que já tem o treino carregado: workout.id existe. -->
       <AddToRoutineModal v-if="showSave" v-model="showSave" :workout-id="workout.id" />
+      <ReportWorkoutModal v-if="showReport" v-model="showReport" :workout-id="workout.id" @reported="handleReported" />
 
       <p v-if="workout.description" class="mt-3" style="white-space: pre-line;">
         {{ workout.description }}

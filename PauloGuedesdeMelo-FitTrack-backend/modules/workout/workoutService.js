@@ -9,6 +9,8 @@ const Comment = require('../comment/commentModel');
 const Follow = require('../follow/followModel');
 const Routine = require('../routine/routineModel');
 const RoutineWorkout = require('../routine/routineWorkoutModel');
+const Report = require('../report/reportModel');
+const Notification = require('../notification/notificationModel');
 const { parseId } = require('../../utils/httpError');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'workouts');
@@ -256,6 +258,16 @@ async function deleteWorkout(workoutId, userId) {
     // adiante.
     await Like.destroy({ where: { workoutId: workout.id }, transaction });
     await Comment.destroy({ where: { workoutId: workout.id }, transaction });
+
+    // Denúncias e notificações do treino (Aula 14): FILHAS antes do pai. As
+    // duas têm chave estrangeira para workouts, mas com comportamentos
+    // DIFERENTES ao excluir o treino:
+    //   reports.workout_id        NO ACTION -> o banco RECUSA a exclusão (500)
+    //   notifications.workout_id  SET NULL  -> o banco aceita e deixa um aviso
+    //                                          ÓRFÃO, apontando para nada
+    // Nos dois casos a API apaga as linhas antes (teste de controle da Etapa 4).
+    await Report.destroy({ where: { workoutId: workout.id }, transaction });
+    await Notification.destroy({ where: { workoutId: workout.id }, transaction });
 
     // Rotinas que continham este treino. O ON DELETE CASCADE do banco apagaria
     // as linhas da junção sozinho, mas NÃO sabe que o treinosCount de cada

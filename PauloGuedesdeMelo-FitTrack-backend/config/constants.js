@@ -39,6 +39,19 @@ module.exports = {
     DEFAULT_LIMIT: 12,
     MAX_LIMIT: 50
   },
+  // Notificações (Aula 14): um aviso para o DONO de um item (ou para quem foi
+  // seguido) quando outra pessoa age. Os três tipos são as três ações das
+  // Atividades 10 e 11 (curtir, comentar, seguir). Valores = chaves gravadas
+  // no banco (ENUM) e usadas pelo front para escolher o texto.
+  NOTIFICATION: {
+    TYPES: { LIKE: 'like', COMMENT: 'comment', FOLLOW: 'follow' }
+  },
+  // Denúncias (Aula 14): os cinco motivos são FIXOS para todos os projetos (a
+  // Aula 15 lê as denúncias com a mesma lista). O banco guarda a CHAVE; os
+  // rótulos em português ficam no front.
+  REPORT: {
+    REASONS: ['inappropriate_content', 'harassment', 'spam', 'copyright', 'other']
+  },
   // Tamanho máximo dos uploads, em bytes. Ficam aqui (e não escritos nos dois
   // Multers) para que a mensagem de erro do errorHandler use o mesmo número.
   UPLOAD: {

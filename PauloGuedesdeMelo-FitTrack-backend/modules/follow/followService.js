@@ -3,6 +3,8 @@ const sequelize = require('../../config/database');
 const User = require('../user/userModel');
 const Follow = require('./followModel');
 const { httpError } = require('../../utils/httpError');
+const { createNotification, removeNotification } = require('../notification/notificationService');
+const { NOTIFICATION } = require('../../config/constants');
 
 // Só estes campos da pessoa saem nas listas (nunca password nem e-mail).
 const PERSON_ATTRIBUTES = ['id', 'username', 'fullName', 'bio', 'profilePicture'];
@@ -25,9 +27,10 @@ async function assertUserExists(userId) {
 }
 
 /**
- * Seguir / deixar de seguir (toggle). Três escritas: a linha em `follows`, o
- * followersCount de QUEM É SEGUIDO e o followingCount de QUEM SEGUE. As três
- * numa transação: ou todas valem, ou nenhuma.
+ * Seguir / deixar de seguir (toggle). Quatro escritas: a linha em `follows`, o
+ * followersCount de QUEM É SEGUIDO, o followingCount de QUEM SEGUE e a
+ * NOTIFICAÇÃO para quem foi seguido. As quatro numa transação: ou todas
+ * valem, ou nenhuma.
  *
  * Os dois ids chegam aqui como NÚMEROS (a conversão acontece na borda, no
  * controller). Se um deles fosse a string "2", `followerId === followingId`
@@ -68,6 +71,12 @@ async function toggleFollow(followerId, followingId) {
         // followersCount sobe em quem É SEGUIDO; followingCount, em quem SEGUE.
         await User.increment('followersCount', { by: 1, where: { id: followingId }, transaction: t });
         await User.increment('followingCount', { by: 1, where: { id: followerId }, transaction: t });
+        // Destinatário: quem é seguido. Sem workoutId (seguir não é sobre
+        // um treino): fica NULL.
+        await createNotification(
+          { userId: followingId, actorId: followerId, type: NOTIFICATION.TYPES.FOLLOW },
+          t
+        );
       } else {
         await follow.destroy({ transaction: t });
         // Nunca abaixo de zero.
@@ -81,6 +90,11 @@ async function toggleFollow(followerId, followingId) {
           where: { id: followerId, followingCount: { [Op.gt]: 0 } },
           transaction: t
         });
+        // Deixar de seguir APAGA o aviso (e seguir de novo cria um novo).
+        await removeNotification(
+          { userId: followingId, actorId: followerId, type: NOTIFICATION.TYPES.FOLLOW },
+          t
+        );
       }
 
       // O increment/decrement mexeu no banco; o reload traz o valor real.

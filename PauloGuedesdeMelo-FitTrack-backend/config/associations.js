@@ -5,6 +5,8 @@ const Comment = require('../modules/comment/commentModel');
 const Follow = require('../modules/follow/followModel');
 const Routine = require('../modules/routine/routineModel');
 const RoutineWorkout = require('../modules/routine/routineWorkoutModel');
+const Notification = require('../modules/notification/notificationModel');
+const Report = require('../modules/report/reportModel');
 
 // Associações centralizadas num arquivo só, em vez de cada model importar o
 // outro diretamente: se userModel.js importasse workoutModel.js e
@@ -53,4 +55,17 @@ RoutineWorkout.belongsTo(Routine, { foreignKey: 'routineId', as: 'routine' });
 Workout.hasMany(RoutineWorkout, { foreignKey: 'workoutId', as: 'routineLinks', onDelete: 'CASCADE' });
 RoutineWorkout.belongsTo(Workout, { foreignKey: 'workoutId', as: 'workout' });
 
-module.exports = { User, Workout, Like, Comment, Follow, Routine, RoutineWorkout };
+// Notificações e denúncias (Aula 14): SÓ o sentido belongsTo, de propósito. É a
+// belongsTo que cria a chave estrangeira e escolhe o ON DELETE:
+//   - Notification.workoutId aceita NULL  -> ON DELETE SET NULL
+//   - Report.workoutId é NOT NULL         -> ON DELETE NO ACTION (recusa)
+// Cinco associações: a notificação tem dois usuários (Recipient e Actor, a
+// mesma tabela duas vezes) e um treino; a denúncia, um usuário (Reporter) e um
+// treino.
+Notification.belongsTo(User, { foreignKey: 'userId', as: 'Recipient' });
+Notification.belongsTo(User, { foreignKey: 'actorId', as: 'Actor' });
+Notification.belongsTo(Workout, { foreignKey: 'workoutId', as: 'Workout' });
+Report.belongsTo(User, { foreignKey: 'userId', as: 'Reporter' });
+Report.belongsTo(Workout, { foreignKey: 'workoutId', as: 'Workout' });
+
+module.exports = { User, Workout, Like, Comment, Follow, Routine, RoutineWorkout, Notification, Report };

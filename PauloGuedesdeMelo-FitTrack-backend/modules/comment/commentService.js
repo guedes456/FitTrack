@@ -4,6 +4,8 @@ const User = require('../user/userModel');
 const Comment = require('./commentModel');
 const { AUTHOR_ATTRIBUTES } = require('../workout/workoutService');
 const { httpError, parseId } = require('../../utils/httpError');
+const { createNotification } = require('../notification/notificationService');
+const { NOTIFICATION } = require('../../config/constants');
 
 function toPublicComment(comment) {
   return {
@@ -30,8 +32,8 @@ function toPublicComment(comment) {
 async function createComment(userId, workoutId, content) {
   const id = parseId(workoutId);
 
-  // Linha em `comments` + contador `commentsCount` do treino: duas escritas,
-  // uma transação.
+  // Linha em `comments` + contador `commentsCount` do treino + notificação
+  // para o dono: três escritas, uma transação.
   const createdId = await sequelize.transaction(async (t) => {
     const workout = await Workout.findByPk(id, { transaction: t });
     if (!workout) {
@@ -43,6 +45,13 @@ async function createComment(userId, workoutId, content) {
       { transaction: t }
     );
     await workout.increment('commentsCount', { by: 1, transaction: t });
+
+    // Só CRIA o aviso: a API não exclui comentários, então não há "desfazer"
+    // (e, se um dia houver, o aviso é de um fato que aconteceu: alguém falou).
+    await createNotification(
+      { userId: workout.userId, actorId: userId, type: NOTIFICATION.TYPES.COMMENT, workoutId: id },
+      t
+    );
 
     return comment.id;
   });

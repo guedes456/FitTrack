@@ -52,6 +52,33 @@ export const MESSAGES = {
   LIKE_ERROR: 'Não foi possível registrar sua curtida.',
   FOLLOW_ERROR: 'Não foi possível concluir. Tente novamente.',
   WORKOUT_DELETED: 'Treino excluído com sucesso.',
+  REPORT_SENT: 'Denúncia enviada. Obrigado por avisar.',
   ROUTINE_DELETED: 'Rotina excluída com sucesso.',
   WORKOUT_REMOVED_FROM_ROUTINE: 'Treino removido da rotina.',
 }
+
+// Notificações (Aula 14). POLL_MS: de quanto em quanto tempo o sino pergunta
+// "quantas não lidas?" (30 s: o aviso chega "quase na hora" sem martelar a
+// API; ver stores/notifications.js).
+export const NOTIFICATIONS = {
+  POLL_MS: 30000,
+}
+
+// Texto de cada tipo de notificação: "@usuário" + este texto (+ título do
+// treino, quando há). As chaves são as MESMAS que a API grava no ENUM.
+export const NOTIFICATION_TEXT = {
+  like: 'curtiu o seu treino',
+  comment: 'comentou no seu treino',
+  follow: 'começou a seguir você',
+}
+
+// Motivos de denúncia: a API guarda a CHAVE (key); a tela mostra o RÓTULO
+// (label). A lista e a ordem são fixas para todos os projetos (a Aula 15 lê
+// as denúncias com a mesma lista).
+export const REPORT_REASONS = [
+  { key: 'inappropriate_content', label: 'Conteúdo impróprio' },
+  { key: 'harassment', label: 'Assédio ou discurso de ódio' },
+  { key: 'spam', label: 'Spam ou golpes' },
+  { key: 'copyright', label: 'Violação de direitos autorais' },
+  { key: 'other', label: 'Outro' },
+]
