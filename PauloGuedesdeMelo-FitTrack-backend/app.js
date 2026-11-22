@@ -14,6 +14,7 @@ var followRoutes = require('./modules/follow/followRoutes');
 var routineRoutes = require('./modules/routine/routineRoutes');
 var notificationRoutes = require('./modules/notification/notificationRoutes');
 var reportRoutes = require('./modules/report/reportRoutes');
+var adminRoutes = require('./modules/admin/adminRoutes');
 var errorHandler = require('./middlewares/errorHandler');
 
 var app = express();
@@ -46,6 +47,8 @@ app.use('/api', followRoutes);
 app.use('/api', routineRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', reportRoutes);
+// Depois das denúncias e ANTES do 404: o router.use('/admin') guarda tudo.
+app.use('/api', adminRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

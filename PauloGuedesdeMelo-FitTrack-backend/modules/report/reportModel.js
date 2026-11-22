@@ -16,7 +16,17 @@ const Report = sequelize.define('Report',
     // enquanto existirem denúncias dele) e a API precisa apagá-las antes.
     workoutId: { type: DataTypes.INTEGER, allowNull: false },
     // Segunda defesa do motivo: o validator barra na API; o ENUM, no banco.
-    reason: { type: DataTypes.ENUM(...REPORT.REASONS), allowNull: false }
+    reason: { type: DataTypes.ENUM(...REPORT.REASONS), allowNull: false },
+    // Situação (Aula 15). O defaultValue é o que permite o sync({ alter: true })
+    // acrescentar uma coluna NOT NULL a uma tabela que JÁ TEM linhas: o banco
+    // preenche as denúncias antigas com 'pending' em vez de recusar o ALTER.
+    status: {
+      type: DataTypes.ENUM(...Object.values(REPORT.STATUS)),
+      allowNull: false,
+      defaultValue: REPORT.STATUS.PENDING
+    },
+    // Quando foi revisada; NULL enquanto estiver pendente.
+    reviewedAt: { type: DataTypes.DATE, allowNull: true }
   },
   {
     timestamps: true,
@@ -26,7 +36,9 @@ const Report = sequelize.define('Report',
       { unique: true, fields: ['user_id', 'workout_id'], name: 'idx_unique_report_user_workout' },
       // O índice acima NÃO ajuda quem busca só por workout_id: "denúncias
       // deste treino" (exclusão do treino, painel da Aula 15).
-      { fields: ['workout_id'], name: 'idx_reports_workout_id' }
+      { fields: ['workout_id'], name: 'idx_reports_workout_id' },
+      // O painel filtra por situação (pendentes/revisadas) e conta por ela.
+      { fields: ['status'], name: 'idx_reports_status' }
     ]
   }
 );

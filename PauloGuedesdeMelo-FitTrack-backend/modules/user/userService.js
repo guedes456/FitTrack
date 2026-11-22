@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { generateToken } = require('../../config/jwt');
 const { httpError } = require('../../utils/httpError');
+const { BLOCKED_MESSAGE } = require('../../middlewares/auth');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'public', 'uploads', 'profiles');
 
@@ -47,6 +48,14 @@ async function loginUser(email, password) {
 
   if (!passwordMatches) {
     throw httpError(401, 'E-mail ou senha inválidos.');
+  }
+
+  // Bloqueio DEPOIS da senha: quem não sabe a senha continua recebendo a
+  // mensagem genérica e não descobre quais contas existem nem quais estão
+  // bloqueadas. 403 (e não 401): a identidade foi provada, mas a entrada é
+  // proibida. As rotas autenticadas respondem 401 (ver middlewares/auth.js).
+  if (user.isBlocked) {
+    throw httpError(403, BLOCKED_MESSAGE);
   }
 
   const token = generateToken({

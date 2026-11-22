@@ -245,8 +245,20 @@ async function updateWorkout(workoutId, userId, { title, description }, newFileN
   };
 }
 
-async function deleteWorkout(workoutId, userId) {
-  const workout = await findOwnedWorkout(workoutId, userId);
+// isAdmin (Aula 15): o painel reaproveita ESTA função em vez de ter um
+// destroy próprio. O administrador pula só a checagem de dono; a existência
+// (404) continua valendo para todos, e as cinco tabelas continuam sendo
+// limpas na mesma transação.
+async function deleteWorkout(workoutId, userId, isAdmin = false) {
+  let workout;
+  if (isAdmin) {
+    workout = await Workout.findByPk(parseId(workoutId));
+    if (!workout) {
+      throw notFoundError();
+    }
+  } else {
+    workout = await findOwnedWorkout(workoutId, userId);
+  }
   const fileName = workout.image;
 
   // Registro e contador mudam juntos, numa transação: ou os dois acontecem,
@@ -291,9 +303,11 @@ async function deleteWorkout(workoutId, userId) {
     }
 
     await workout.destroy({ transaction });
+    // O contador que cai é o do DONO do treino, não o de quem excluiu: se
+    // quem exclui é o administrador, `userId` seria o dele.
     await User.decrement('treinosCount', {
       by: 1,
-      where: { id: userId, treinosCount: { [Op.gt]: 0 } },
+      where: { id: workout.userId, treinosCount: { [Op.gt]: 0 } },
       transaction
     });
   });

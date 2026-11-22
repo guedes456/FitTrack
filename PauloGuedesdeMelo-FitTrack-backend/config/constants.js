@@ -50,7 +50,15 @@ module.exports = {
   // Aula 15 lê as denúncias com a mesma lista). O banco guarda a CHAVE; os
   // rótulos em português ficam no front.
   REPORT: {
-    REASONS: ['inappropriate_content', 'harassment', 'spam', 'copyright', 'other']
+    REASONS: ['inappropriate_content', 'harassment', 'spam', 'copyright', 'other'],
+    // Situação da denúncia (Aula 15): toda denúncia nasce 'pending' e o
+    // administrador a marca como 'reviewed'.
+    STATUS: { PENDING: 'pending', REVIEWED: 'reviewed' }
+  },
+  // Painel de administração (Aula 15). 'all' só existe como FILTRO da lista,
+  // nunca é gravado no banco.
+  ADMIN: {
+    REPORT_FILTERS: ['pending', 'reviewed', 'all']
   },
   // Tamanho máximo dos uploads, em bytes. Ficam aqui (e não escritos nos dois
   // Multers) para que a mensagem de erro do errorHandler use o mesmo número.

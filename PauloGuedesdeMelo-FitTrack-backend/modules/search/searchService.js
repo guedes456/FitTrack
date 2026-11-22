@@ -3,19 +3,12 @@ const Workout = require('../workout/workoutModel');
 const User = require('../user/userModel');
 const { AUTHOR_ATTRIBUTES, toPublicWorkout } = require('../workout/workoutService');
 const { SEARCH } = require('../../config/constants');
+const escapeLike = require('../../utils/escapeLike');
 
 /**
  * Camada de acesso a dados do módulo de busca (Aula 13): consulta o banco de
  * verdade por treinos e pessoas que combinem com o termo.
  */
-
-// No LIKE, % significa "qualquer coisa" e _ significa "qualquer caractere".
-// Sem escape, digitar %% casaria com TUDO (e "a_c" casaria com "abc").
-// Escapar com \ (o escape padrão do LIKE no MySQL) faz esses caracteres
-// valerem como texto comum. A própria barra também precisa ser escapada.
-function escapeLike(text) {
-  return text.replace(/[\\%_]/g, '\\$&');
-}
 
 async function searchWorkouts(query) {
   const workouts = await Workout.findAll({
@@ -53,4 +46,4 @@ async function globalSearch(query) {
   return { treinos, users };
 }
 
-module.exports = { escapeLike, searchWorkouts, searchUsers, globalSearch };
+module.exports = { searchWorkouts, searchUsers, globalSearch };
