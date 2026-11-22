@@ -34,25 +34,26 @@ const { isAuthenticated, isAdmin } = useAuth()
       <i class="bi bi-cloud-upload me-2"></i>Upload
     </router-link>
 
+    <!-- Seção só para administrador. Um link só, para /admin: a rota pai
+         redireciona para o Dashboard e as abas do painel levam ao resto. -->
     <template v-if="isAdmin">
       <hr />
+      <span class="sidebar-section">Administração</span>
       <router-link to="/admin">
-        <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
-      </router-link>
-      <router-link to="/admin/treinos">
-        <i class="bi bi-clipboard-data me-2"></i>Gerenciar Treinos
-      </router-link>
-      <router-link to="/admin/categorias">
-        <i class="bi bi-tags me-2"></i>Gerenciar Categorias
-      </router-link>
-      <router-link to="/admin/usuarios">
-        <i class="bi bi-person-gear me-2"></i>Gerenciar Usuários
+        <i class="bi bi-speedometer2 me-2"></i>Painel de administração
       </router-link>
     </template>
   </aside>
 </template>
 
 <style scoped>
+.sidebar-section {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;

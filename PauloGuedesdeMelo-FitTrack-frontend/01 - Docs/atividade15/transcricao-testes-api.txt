@@ -1,0 +1,297 @@
+TRANSCRIÇÃO DOS TESTES DA API — Atividade 15 (Parte A, Etapas 4 e 5)
+Gerada rodando os curl contra a API local, com banco novo (contas adm/ana/beto/carla).
+
+###### PREPARO: contas adm/ana/beto/carla (ids 1-4), 2 treinos, 3 denuncias; 'adm' ainda NAO e administrador (token OLD emitido antes da promocao)
+
+###### 1) SEM TOKEN (401) e USUARIO COMUM (403) - 7 rotas + rota inexistente
+
+$ curl -X GET /api/admin/dashboard
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/admin/dashboard
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X GET /api/admin/reports
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/admin/reports
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X PATCH /api/admin/reports/1/review
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X PATCH /api/admin/reports/1/review
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X GET /api/admin/users
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/admin/users
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X PATCH /api/admin/users/3/block
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X PATCH /api/admin/users/3/block
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X GET /api/admin/workouts
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/admin/workouts
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X DELETE /api/admin/workouts/1
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X DELETE /api/admin/workouts/1
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X GET /api/admin/rota-inexistente
+{"success":false,"message":"Não autorizado. Token não informado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/admin/rota-inexistente
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+###### PROMOCAO
+"adm" agora é administrador.
+
+###### 2) Dashboard com o token emitido ANTES da promocao
+
+$ curl -X GET /api/admin/dashboard
+{"success":true,"message":null,"data":{"users":4,"blockedUsers":0,"workouts":2,"comments":0,"likes":0,"pendingReports":3,"reviewedReports":0}}
+=> HTTP 200
+
+###### 3) Denuncias
+
+$ curl -X GET /api/admin/reports
+{"success":true,"message":null,"data":{"items":[{"id":3,"reason":"copyright","status":"pending","createdAt":"2026-11-22T21:33:12.000Z","reviewedAt":null,"reporter":{"id":4,"username":"carla","fullName":"User carla","profilePicture":"default-profile.png"},"workout":{"id":2,"title":"Treino do Beto","image":"workout-3-1795383192428.png","user":{"id":3,"username":"beto","fullName":"User beto","profilePicture":"default-pr ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/reports?status=all
+{"success":true,"message":null,"data":{"items":[{"id":3,"reason":"copyright","status":"pending","createdAt":"2026-11-22T ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/reports?status=reviewed
+{"success":true,"message":null,"data":{"items":[],"page":1,"limit":12,"total":0,"hasMore":false}}
+=> HTTP 200
+
+$ curl -X GET /api/admin/reports?status=xyz
+{"success":false,"message":"Filtro inválido. Use pending, reviewed ou all.","errors":[{"type":"field","value": ...
+=> HTTP 400
+
+$ curl -X GET /api/admin/reports?limit=1&page=2
+{"success":true,"message":null,"data":{"items":[{"id":2,"reason":"harassment","status":"pending","createdAt":"2026-11-22T21:33:12.000Z","reviewedAt":null,"reporter":{"id":2,"username":"ana","fullName" ...
+=> HTTP 200
+
+###### 4) Revisar (idempotente)
+
+$ curl -X PATCH /api/admin/reports/1/review
+{"success":true,"message":"Denúncia marcada como revisada.","data":{"id":1,"status":"reviewed","reviewedAt":"2026-11-22T21:33:13.000Z"}}
+=> HTTP 200
+
+$ curl -X PATCH /api/admin/reports/1/review
+{"success":true,"message":"Denúncia marcada como revisada.","data":{"id":1,"status":"reviewed","reviewedAt":"2026-11-22T21:33:13.000Z"}}
+=> HTTP 200
+
+$ curl -X PATCH /api/admin/reports/99999/review
+{"success":false,"message":"Denúncia não encontrada.","errors":[]}
+=> HTTP 404
+
+$ curl -X PATCH /api/admin/reports/abc/review
+{"success":false,"message":"Identificador de denúncia inválido.","errors":[]}
+=> HTTP 400
+
+$ curl -X PATCH /api/admin/reports/2/review
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+
+$ curl -X GET /api/admin/dashboard
+{"success":true,"message":null,"data":{"users":4,"blockedUsers":0,"workouts":2,"comments":0,"likes":0,"pendingReports":2,"reviewedReports":1}}
+=> HTTP 200
+
+###### 5) Usuarios
+
+$ curl -X GET /api/admin/users
+{"success":true,"message":null,"data":{"items":[{"id":4,"username":"carla","email":"carla@t.com","fullName":"User carla","profilePicture":"default-profile.png","isBlocked":false,"isAdmin":false,"followersCount":0,"followingCount":0,"treinosCount":0,"createdAt":"2026-11-22T21:33:11.000Z"},{"id":3,"username":"beto","email":"beto@t ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/users?search=beto
+{"success":true,"message":null,"data":{"items":[{"id":3,"username":"beto","email":"beto@t.com","fullName":"User beto","profilePicture":"default-profil ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/users?search=carla@t
+{"success":true,"message":null,"data":{"items":[{"id":4,"username":"carla","email":"carla@t.com","fullName":"User carla","profilePicture":"default-pro ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/users?search=%25%25
+{"success":true,"message":null,"data":{"items":[],"page":1,"limit":12,"total":0,"hasMore":false}}
+=> HTTP 200
+
+$ curl -X GET /api/admin/users?search=a&search=b
+{"success":true,"message":null,"data":{"items":[{"id":4,"use ...
+=> HTTP 200
+
+###### 6) Bloquear
+
+$ curl -X PATCH /api/admin/users/3/block  -d '{"isBlocked":true}'
+{"success":true,"message":"Usuário bloqueado.","data":{"id":3,"username":"beto","isBlocked":true}}
+=> HTTP 200
+
+$ curl -X PATCH /api/admin/users/3/block  -d '{"isBlocked":true}'
+{"success":true,"message":"Usuário bloqueado.","data":{"id":3,"username":"beto","isBlocked":true}}
+=> HTTP 200
+-- token ANTIGO de B (rota autenticada):
+
+$ curl -X GET /api/profile/me
+{"success":false,"message":"Sua conta foi bloqueada. Entre em contato com a administração.","errors":[]}
+=> HTTP 401
+
+$ curl -X POST /api/login  -d '{"email":"beto@t.com","password":"123456"}'
+{"success":false,"message":"Sua conta foi bloqueada. Entre em contato com a administração.","errors":[]}
+=> HTTP 403
+
+$ curl -X POST /api/login  -d '{"email":"beto@t.com","password":"errada"}'
+{"success":false,"message":"E-mail ou senha inválidos.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/profile/beto
+{"success":true,"message":null,"data":{"id":3,"username":"beto","fullName":"User beto","bio":null,"p ...
+=> HTTP 200
+
+$ curl -X PATCH /api/admin/users/3/block  -d '{"isBlocked":false}'
+{"success":true,"message":"Usuário desbloqueado.","data":{"id":3,"username":"beto","isBlocked":false}}
+=> HTTP 200
+-- MESMO token de B depois de desbloquear:
+
+$ curl -X GET /api/profile/me
+{"success":true,"message":null,"data":{"id":3,"username":"beto","email":"beto@t.com","full ...
+=> HTTP 200
+
+$ curl -X PATCH /api/admin/users/3/block  -d '{}'
+{"success":false,"message":"Informe isBlocked (true ou false).","errors":[{"type":"field","msg":"Informe isBlocked (true ou false).","path":"isBlocked","location":"body"}]}
+=> HTTP 400
+
+$ curl -X PATCH /api/admin/users/3/block  -d '{"isBlocked":"true"}'
+{"success":false,"message":"isBlocked deve ser true ou false.","errors":[{"type":"field","value":"true","msg":"isBlocked deve ser true ou false.","path":"isBlocked","location":"body"}]}
+=> HTTP 400
+
+$ curl -X PATCH /api/admin/users/1/block  -d '{"isBlocked":true}'
+{"success":false,"message":"Você não pode bloquear a sua própria conta.","errors":[]}
+=> HTTP 400
+
+$ curl -X PATCH /api/admin/users/4/block  -d '{"isBlocked":true}'
+{"success":false,"message":"Não é possível bloquear outro administrador.","errors":[]}
+=> HTTP 403
+
+$ curl -X PATCH /api/admin/users/99999/block  -d '{"isBlocked":true}'
+{"success":false,"message":"Usuário não encontrado.","errors":[]}
+=> HTTP 404
+
+$ curl -X PATCH /api/admin/users/abc/block  -d '{"isBlocked":true}'
+{"success":false,"message":"Identificador de usuário inválido.","errors":[]}
+=> HTTP 400
+
+###### 7) Rebaixado
+"adm" agora NÃO é administrador.
+
+$ curl -X GET /api/admin/dashboard
+{"success":false,"message":"Acesso restrito a administradores.","errors":[]}
+=> HTTP 403
+"adm" agora é administrador.
+
+$ curl -X GET /api/admin/dashboard
+{"success":true,"message":null,"data":{"users":4,"blockedUsers":0,"workouts":2,"comments":0,"likes":0,"pendingReports":2 ...
+=> HTTP 200
+
+###### 8) Treinos
+
+$ curl -X GET /api/admin/workouts
+{"success":true,"message":null,"data":{"items":[{"id":2,"title":"Treino do Beto","description":null,"image":"workout-3-1795383192428.png","viewsCount":0,"likesCount":0,"commentsCount":0,"createdAt":"2026-11-22T21:33:12.000Z","user":{"id":3,"username":"beto","fullName":"User beto","profilePicture":"default-profile.png"},"pendingR ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/workouts?search=beto
+{"success":true,"message":null,"data":{"items":[{"id":2,"title":"Treino do Beto","description":null,"image":"workout-3-17953831924 ...
+=> HTTP 200
+
+$ curl -X GET /api/admin/workouts?search=%25%25
+{"success":true,"message":null,"data":{"items":[],"page":1,"limit":12,"total":0,"hasMore":false}}
+=> HTTP 200
+workout_id	status	total
+1	reviewed	1
+2	pending	2
+id	username	treinos_count
+2	ana	1
+3	beto	1
+-- rota COMUM de excluir com o token do ADMIN (nao e o dono):
+
+$ curl -X DELETE /api/workouts/2
+{"success":false,"message":"Você não tem permissão para alterar este treino.","errors":[]}
+=> HTTP 403
+-- rota do PAINEL:
+
+$ curl -X DELETE /api/admin/workouts/2
+{"success":true,"message":"Treino excluído com sucesso.","data":null}
+=> HTTP 200
+denuncias_do_treino_2
+0
+id	username	treinos_count
+2	ana	1
+3	beto	0
+arquivos em disco (png de teste): 1  (era 2, caiu para 1)
+
+$ curl -X DELETE /api/admin/workouts/2
+{"success":false,"message":"Treino não encontrado.","errors":[]}
+=> HTTP 404
+
+$ curl -X DELETE /api/admin/workouts/abc
+{"success":false,"message":"Identificador de treino inválido.","errors":[]}
+=> HTTP 400
+
+###### 9) Regressao
+
+$ curl -X GET /api/feed
+{"success":true,"message":null,"data":{"items":[{"id":1,"title":"Treino da Ana","description":null," ...
+=> HTTP 200
+
+$ curl -X GET /api/search?q=%25%25
+{"success":true,"message":null,"data":{"query":"%%","treinos":[],"users":[]}}
+=> HTTP 200
+
+$ curl -X GET /api/profile/me
+{"success":false,"message":"Não autorizado. Token inválido ou expirado.","errors":[]}
+=> HTTP 401
+
+$ curl -X GET /api/notifications
+{"success":true,"message":null,"data":{"items":[],"page":1,"limit":12,"total":0,"hasMore":false}}
+=> HTTP 200
+
+###### CONTROLE (Etapa 4) — resultados observados
+(a) Em middlewares/auth.js, as 3 linhas do `if (user.isBlocked) {...}` comentadas; B bloqueado pelo painel (PATCH /admin/users/3/block -> 200).
+    Token ANTIGO de B em GET /api/profile/me  =>  HTTP 200 (o bloqueado continuou usando a API). Desfeito: o mesmo token voltou a dar 401 "Sua conta foi bloqueada...".
+(b) Em modules/admin/adminRoutes.js, `isAdmin` retirado da linha do router.use('/admin', ...).
+    GET /api/admin/dashboard com o token de um usuário COMUM (ana)  =>  HTTP 200 com os números do sistema ({"users":4,"blockedUsers":1,...}).
+    Desfeito: voltou a responder 403 "Acesso restrito a administradores.".
+
+###### BANCO — migração da coluna `status` numa tabela que já tinha linhas
+Tabela reports criada SEM status/reviewed_at, com 3 linhas; ao reiniciar a API (sync alter:true):
+  `status` enum('pending','reviewed') NOT NULL DEFAULT 'pending',
+  `reviewed_at` datetime DEFAULT NULL,
+  KEY `idx_reports_status` (`status`)
+  SELECT status, COUNT(*) FROM reports GROUP BY status;  ->  pending | 3

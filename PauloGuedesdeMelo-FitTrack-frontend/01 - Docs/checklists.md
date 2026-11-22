@@ -253,3 +253,8 @@ Verificação no `router/index.js`: a rota `notifications` (`/notificacoes`) **j
 - [x] Logout corrigido (`undefined` no lugar de `null`)
 - [ ] Logout com o Console limpo (print console-logout.jpg)
 - [ ] Teste prático completo (os nove passos), a partir do login, sem digitar nenhuma URL
+
+---
+
+## Atividade 15 — Painel de Administração
+Os checklists completos desta atividade (ficha, alcançabilidade, Parte A e Parte B), a limitação da paginação por `offset` (o "pulo", a resolver por cursor na Aula 18) e o que ainda depende de teste no navegador estão em `atividade15/checklists-aula15.md`; as respostas, em `atividade15/respostas.md`; a transcrição dos testes da API, em `atividade15/transcricao-testes-api.txt`.

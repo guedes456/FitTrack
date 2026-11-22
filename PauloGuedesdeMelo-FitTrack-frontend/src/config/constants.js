@@ -82,3 +82,11 @@ export const REPORT_REASONS = [
   { key: 'copyright', label: 'Violação de direitos autorais' },
   { key: 'other', label: 'Outro' },
 ]
+
+// Filtros da lista de denúncias do painel (Aula 15). Os `value` são IGUAIS aos
+// da API (ADMIN.REPORT_FILTERS); os `label` são para a pessoa ler.
+export const REPORT_FILTERS = [
+  { value: 'pending', label: 'Pendentes' },
+  { value: 'reviewed', label: 'Revisadas' },
+  { value: 'all', label: 'Todas' },
+]
