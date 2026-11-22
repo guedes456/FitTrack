@@ -270,17 +270,18 @@ const list = async (token, qs = '') => (await call('GET', `/notifications${qs}`,
 async function prepare() {
   const A = await ensureUser('prints14_a');
   const B = await ensureUser('prints14_b');
-  const C = await ensureUser('prints14_c');
-  await reset(A, B, C); // rotinas e treinos (a API apaga curtidas, comentários, denúncias e avisos deles)
-  const ids = [A.id, B.id, C.id].join(',');
+  const Cc = await ensureUser('prints14_c'); // (C é o objeto de cores neste arquivo)
+  await reset(A, B, Cc); // rotinas e treinos (a API apaga curtidas, comentários, denúncias e avisos deles)
+  const ids = [A.id, B.id, Cc.id].join(',');
   await sql(`DELETE FROM notifications WHERE user_id IN (${ids}) OR actor_id IN (${ids})`);
   await sql(`DELETE FROM follows WHERE follower_id IN (${ids}) OR following_id IN (${ids})`);
   await sql(`UPDATE users SET followers_count = 0, following_count = 0 WHERE id IN (${ids})`);
   const WA = await uploadWorkout(A.token, 'Treino do A');
   const WB = await uploadWorkout(B.token, 'Treino do B');
-  const WC = await uploadWorkout(C.token, 'Treino do C');
-  console.log(`${C.dim}Contas prontas: A=${A.id} B=${B.id} C=${C.id} · treinos A=${WA} B=${WB} C=${WC}${C.reset}`);
-  return { A, B, C, WA, WB, WC };
+  const WC = await uploadWorkout(Cc.token, 'Treino do C');
+  // No relatório HTML o aviso de preparação não aparece (ia parar no rodapé do teste anterior).
+  if (!HTML) console.log(`${C.dim}Contas prontas: A=${A.id} B=${B.id} C=${Cc.id} · treinos A=${WA} B=${WB} C=${WC}${C.reset}`);
+  return { A, B, C: Cc, WA, WB, WC };
 }
 
 async function main() {
